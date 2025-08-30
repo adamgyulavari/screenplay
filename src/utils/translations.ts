@@ -27,6 +27,7 @@ export const translations = {
   pressToReveal: 'Nyomd meg a',
   space: 'Szóköz',
   toRevealLine: 'gombot a sor megjelenítéséhez',
+  advance: 'Tovább',
   
   // Memorizer View
   noMoreDialogue: 'Nincs több párbeszéd',
