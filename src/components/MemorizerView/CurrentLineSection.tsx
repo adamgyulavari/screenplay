@@ -6,6 +6,7 @@ import { advance, moveBack } from '../../store/appSlice';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
 import { useEffect } from 'react';
+import { analytics } from '../../utils/analytics';
 
 export const CurrentLineSection = () => {
   const character = useAppSelector((state) => state.app.selectedCharacter);
@@ -14,8 +15,18 @@ export const CurrentLineSection = () => {
   const showLine = useAppSelector((state) => state.app.showLine);
   const dispatch = useAppDispatch();
 
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentSegmentIndex, currentTextSegments]);
+
+  if (!character) return null;
+
   const handleNext = () => {
+    
     dispatch(advance());
+
+    analytics.trackCharacterAdvanced(character.role);
   };
 
   const handlePrev = () => {
@@ -31,13 +42,6 @@ export const CurrentLineSection = () => {
       handlePrev();
     }
   };
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentSegmentIndex, currentTextSegments]);
-
-  if (!character) return null;
 
   return (
     <>

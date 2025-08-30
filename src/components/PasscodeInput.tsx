@@ -5,6 +5,7 @@ import { decryptData } from '../utils/encryption';
 import { processScreenplayData } from '../utils/screenplay';
 import { translations } from '../utils/translations';
 import encryptedScreenplayData from '../data/screenplay-encrypted.json';
+import { analytics } from '../utils/analytics';
 
 export function PasscodeInput() {
   const dispatch = useAppDispatch();
@@ -37,7 +38,9 @@ export function PasscodeInput() {
       }));
       
       const processedData = processScreenplayData(indexedScreenplay);
+
       dispatch(login({ apiKey: decryptedApiKey, characters: processedData, screenplay: indexedScreenplay }));
+      analytics.trackLogin();
     } catch (error) {
       setError(translations.passcodeInputError);
     } finally {

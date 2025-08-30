@@ -8,6 +8,7 @@ import { getColorClasses } from '../utils/colors';
 import { logout, setSelectedCharacter } from '../store/appSlice';
 import { clearAccessData } from '../utils/encryption';
 import { translations } from '../utils/translations';
+import { analytics } from '../utils/analytics';
 
 const CharacterPreview = ({ character }: { character: Character }) => {
   const screenplay = useAppSelector((state: any) => state.app.screenplay);
@@ -37,6 +38,7 @@ export const CharacterSelector = () => {
   
   const handleSelectCharacter = (character: Character) => {
     dispatch(setSelectedCharacter(character));
+    analytics.trackCharacterSelected(character.role);
   };
 
   const handleLogout = () => {
