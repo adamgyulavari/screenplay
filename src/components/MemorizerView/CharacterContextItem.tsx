@@ -8,8 +8,8 @@ interface CharacterContextItemProps {
 export const CharacterContextItem: React.FC<CharacterContextItemProps> = ({ role }) => {
   const color = useCharacterColor(role);
   return (
-    <div className={`inline me-5 px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-br from-${color}-500 to-${color}-700 text-white`}>
+    <span className={`me-5 mb-2 px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-br from-${color}-500 to-${color}-700 text-white`}>
       {role}
-    </div>
+    </span>
   );
 }; 

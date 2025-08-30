@@ -73,28 +73,20 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             <button
               key={character.role}
               onClick={() => onSelectCharacter(character)}
-              className="group relative overflow-hidden rounded-2xl p-8 text-left transition-all duration-300 hover:scale-105 hover:shadow-2xl transform-gpu"
+              className="group relative overflow-hidden rounded-2xl h-48 p-8 text-left transition-all duration-300 hover:scale-105 hover:shadow-2xl transform-gpu"
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${getColorClasses(character.color).from} ${getColorClasses(character.color).to} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />
               
               <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-start mb-4 gap-4">
                   <div className="bg-white/20 rounded-full p-3 backdrop-blur-sm">
                     <User className="w-8 h-8 text-white" />
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-white/90">
-                      {character.dialogues.length}
-                    </div>
-                    <div className="text-sm text-white/70">
-                      lines
-                    </div>
-                  </div>
-                </div>
-                
                 <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-white/90 transition-colors">
                   {character.role}
                 </h3>
+                </div>
+                
                 
                 <CharacterPreview character={character} />
               </div>

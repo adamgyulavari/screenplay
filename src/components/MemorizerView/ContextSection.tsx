@@ -26,7 +26,7 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
             className="p-4 rounded-xl border border-slate-600/50 transition-all duration-500 bg-slate-800/30 opacity-70"
         >
             <p className="text-slate-200 leading-relaxed">
-            {contextItem.role.split(', ').map((role) => <CharacterContextItem role={role} />)}
+            {contextItem.role.split(', ').map((role) => <CharacterContextItem key={role} role={role} />)}
             <FormattedText text={contextItem.text} />
             </p>
         </div>

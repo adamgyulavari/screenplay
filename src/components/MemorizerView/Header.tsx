@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, RotateCcw, User, LogOut } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { clearSelectedCharacter, resetCurrentDialogue, logout } from '../../store/appSlice';
+import { clearSelectedCharacter, jump, logout } from '../../store/appSlice';
 import { clearAccessData } from '../../utils/encryption';
 import { ProgressBar } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
@@ -17,7 +17,7 @@ export const Header: React.FC = () => {
   
   const handleReset = () => {
     if (character && character.dialogues[0] !== undefined) {
-      dispatch(resetCurrentDialogue());
+      dispatch(jump(character.dialogues[0]));
     }
   };
 

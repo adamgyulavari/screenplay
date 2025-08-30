@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { setAuthenticated, setPasscode, setCharacters, setScreenplay } from '../store/appSlice';
+import { useAppDispatch } from '../store/hooks';
+import { logout, setAuthenticated, setCharacters, setScreenplay } from '../store/appSlice';
 import { decryptData, storeAccessData, loadAccessData } from '../utils/encryption';
 import { processScreenplayData } from '../utils/screenplay';
 import { translations } from '../utils/translations';
@@ -22,7 +22,7 @@ export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
 
   const checkExistingData = async () => {
     try {
-      const { passcode: storedPasscode, decryptedData } = loadAccessData();
+      const decryptedData = loadAccessData();
       
       if (decryptedData) {
         // We have decrypted data, load it directly
@@ -36,36 +36,11 @@ export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
         dispatch(setScreenplay(indexedScreenplay));
         dispatch(setCharacters(processedData));
         dispatch(setAuthenticated(true));
-        dispatch(setPasscode(storedPasscode || 'stored'));
         onSuccess();
-      } else if (storedPasscode) {
-        // We have a passcode but no decrypted data, try to decrypt
-        try {
-          const decryptedData = await decryptData(encryptedScreenplayData, storedPasscode);
-          const screenplayData = JSON.parse(decryptedData);
-          
-          // Add index property to each dialogue item
-          const indexedScreenplay = screenplayData.map((item: any, index: number) => ({
-            ...item,
-            index
-          }));
-          
-          const processedData = processScreenplayData(indexedScreenplay);
-          dispatch(setScreenplay(indexedScreenplay));
-          dispatch(setCharacters(processedData));
-          dispatch(setAuthenticated(true));
-          dispatch(setPasscode(storedPasscode));
-          
-          // Store the decrypted data for future use
-          storeAccessData(decryptedData, false);
-          onSuccess();
-        } catch (error) {
-          // Invalid passcode, clear it and show login
-          storeAccessData('', true);
-        }
       }
     } catch (error) {
       console.error('Authentication check failed:', error);
+      dispatch(logout());
     }
   };
 
@@ -90,12 +65,10 @@ export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
       const processedData = processScreenplayData(indexedScreenplay);
       dispatch(setScreenplay(indexedScreenplay));
       dispatch(setCharacters(processedData));
-      
-      // Store the decrypted data for future use
-      storeAccessData(decryptedData, false);
+      storeAccessData(decryptedData);
       
       dispatch(setAuthenticated(true));
-      dispatch(setPasscode(passcode));
+      setPasscode(passcode);
       
       onSuccess();
     } catch (error) {

@@ -51,22 +51,14 @@ export async function decryptData(encryptedData: EncryptedData, passcode: string
 }
 
 // Store either the passcode or the decrypted data in localStorage
-export function storeAccessData(data: string, isPasscode: boolean = false): void {
-  if (isPasscode) {
-    localStorage.setItem('screenplayPasscode', data);
-  } else {
-    localStorage.setItem('screenplayData', data);
-  }
+export function storeAccessData(data: string): void {
+  localStorage.setItem('screenplayData', data);
 }
 
-export function loadAccessData(): { passcode: string | null; decryptedData: string | null } {
-  return {
-    passcode: localStorage.getItem('screenplayPasscode'),
-    decryptedData: localStorage.getItem('screenplayData')
-  };
+export function loadAccessData(): string {
+  return localStorage.getItem('screenplayData') || '';
 }
 
 export function clearAccessData(): void {
-  localStorage.removeItem('screenplayPasscode');
   localStorage.removeItem('screenplayData');
 } 

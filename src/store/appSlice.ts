@@ -11,7 +11,6 @@ interface AppState {
   segments: string[];
   showLine: boolean;
   isAuthenticated: boolean;
-  passcode: string | null;
 }
 
 const initialState: AppState = {
@@ -23,7 +22,6 @@ const initialState: AppState = {
   segments: [],
   showLine: false,
   isAuthenticated: false,
-  passcode: null,
 };
 
 const appSlice = createSlice({
@@ -92,18 +90,11 @@ const appSlice = createSlice({
         }
       }
     },
-    resetCurrentDialogue: (state) => {
-      state.currentDialogueIndex = 0;
-    },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
     },
-    setPasscode: (state, action: PayloadAction<string>) => {
-      state.passcode = action.payload;
-    },
     logout: (state) => {
       state.isAuthenticated = false;
-      state.passcode = null;
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
@@ -116,13 +107,11 @@ export const {
   advance,
   clearSelectedCharacter,
   moveBack,
-  resetCurrentDialogue,
   setCharacters,
   jump,
   setScreenplay,
   setSelectedCharacter,
   setAuthenticated,
-  setPasscode,
   logout,
 } = appSlice.actions;
 export default appSlice.reducer; 

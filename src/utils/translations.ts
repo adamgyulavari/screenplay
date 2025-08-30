@@ -1,18 +1,18 @@
 export const translations = {
   // Character Selector
   title: 'Szövegkönyv Memorizáló',
-  subtitle: 'Válaszd ki a szereplőd, hogy elkezdhesd memorizálni a szövegeidet kontextuális párbeszéddel',
+  subtitle: 'Válaszd ki a szereped, hogy elkezdhesd memorizálni a szövegeidet kontextuális párbeszéddel',
   lines: 'sor',
   
   // Header
-  backToCharacters: 'Karakterek',
+  backToCharacters: 'Szereplők',
   reset: 'Újrakezdés',
   
   // Navigation Instructions
   previous: 'Előző',
   next: 'Következő',
   or: 'vagy',
-  longLinesNote: 'A hosszú sorok szegmensekre vannak bontva a könnyebb memorizálás érdekében',
+  longLinesNote: 'A hosszú sorok részekre vannak bontva a könnyebb memorizálás érdekében',
   
   // Progress Bar
   lineOf: 'sor',
@@ -23,7 +23,7 @@ export const translations = {
   
   // Current Line Section
   yourLine: 'A te sorod',
-  segment: 'szegmens',
+  segment: 'rész',
   pressToReveal: 'Nyomd meg a',
   space: 'Szóköz',
   toRevealLine: 'gombot a sor megjelenítéséhez',
