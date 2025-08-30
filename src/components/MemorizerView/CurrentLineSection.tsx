@@ -83,7 +83,7 @@ export const CurrentLineSection = () => {
       </div>
 
       {/* Mobile Version */}
-      <div className="md:hidden mt-6 bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30 shadow-2xl" onClick={handleNext}>
+      <div className="md:hidden mt-6 bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30 shadow-2xl cursor-pointer" onClick={handleNext}>
         <div className="flex items-center gap-3 mb-4">
           <div className={`px-3 py-1.5 rounded-full font-semibold bg-gradient-to-br ${getColorClasses(character.color).from} ${getColorClasses(character.color).to} text-white text-sm`}>
             {character.role}
@@ -127,7 +127,6 @@ export const CurrentLineSection = () => {
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button
             onClick={handlePrev}
-            disabled={!showLine || currentSegmentIndex === 0}
             className="flex items-center justify-center w-14 h-14 bg-slate-700/50 hover:bg-slate-600/50 disabled:bg-slate-800/30 disabled:opacity-50 text-white rounded-full transition-all duration-200 shadow-lg"
           >
             <ArrowLeft className="w-6 h-6" />
