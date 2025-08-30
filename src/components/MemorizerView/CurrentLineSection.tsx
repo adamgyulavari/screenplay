@@ -1,5 +1,5 @@
 
-import { ArrowRight, ArrowLeft, ArrowUp } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { FormattedText } from './FormattedText';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { advance, moveBack } from '../../store/appSlice';

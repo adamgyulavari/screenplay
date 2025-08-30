@@ -1,5 +1,5 @@
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect } from 'react';
 import { CharacterContextItem } from './CharacterContextItem';
 import { FormattedText } from './FormattedText';
 import { useAppSelector } from '../../store/hooks';
@@ -18,6 +18,8 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
   );
   
   const contextItems = useScreenplayItems(screenplay, contextIndexes);
+
+  const needsPseudoElement = currentDialogueIndex < 12;
   
   // Custom smooth scroll function
   const smoothScrollToElement = (element: HTMLElement, container: HTMLElement) => {
@@ -74,6 +76,13 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
         ref={scrollContainerRef}
         className="h-full space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent"
       >
+        {needsPseudoElement && (
+          <div 
+            className="opacity-0 pointer-events-none h-96"
+            aria-hidden="true"
+          />
+        )}
+        
         {contextItems.map((contextItem, idx) => {
           const isCurrentItem = contextIndexes[idx] === currentDialogueIndex - 1;
           const actualDialogueIndex = contextIndexes[idx];
