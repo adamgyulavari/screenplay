@@ -1,3 +1,6 @@
+import { store } from '../store';
+import { setTTS } from '../store/appSlice';
+
 // TTS Configuration - easily switch between providers
 const TTS_CONFIG = {
   provider: 'google' as 'google' | 'browser',
@@ -14,6 +17,13 @@ class TTSService {
   constructor() {
     this.synthesis = window.speechSynthesis;
     this.isSupported = 'speechSynthesis' in window;
+    
+    // Turn off TTS when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        store.dispatch(setTTS(false));
+      }
+    });
   }
 
   processTextForTTS(text: string, maxLength: number = 120): string {

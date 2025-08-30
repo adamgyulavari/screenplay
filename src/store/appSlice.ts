@@ -90,6 +90,9 @@ const appSlice = createSlice({
         }
       }
     },
+    setTTS: (state, action: PayloadAction<boolean>) => {
+      state.ttsEnabled = action.payload;
+    },
     toggleTTS: (state) => {
       state.ttsEnabled = !state.ttsEnabled;
     },
@@ -116,6 +119,7 @@ export const {
   moveBack,
   jump,
   setSelectedCharacter,
+  setTTS,
   toggleTTS,
   login,
   logout,
