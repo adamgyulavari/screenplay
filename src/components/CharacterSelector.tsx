@@ -1,4 +1,3 @@
-import React from 'react';
 import { User, LogOut } from 'lucide-react';
 import { Character } from '../types/screenplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
@@ -6,16 +5,11 @@ import { useScreenplayItem } from '../hooks/useScreenplayItem';
 import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
-import { logout } from '../store/appSlice';
+import { logout, setSelectedCharacter } from '../store/appSlice';
 import { clearAccessData } from '../utils/encryption';
 import { translations } from '../utils/translations';
 
-interface CharacterSelectorProps {
-  characters: Character[];
-  onSelectCharacter: (character: Character) => void;
-}
-
-const CharacterPreview: React.FC<{ character: Character }> = ({ character }) => {
+const CharacterPreview = ({ character }: { character: Character }) => {
   const screenplay = useAppSelector((state: any) => state.app.screenplay);
   const firstDialogueIndex = character.dialogues[0];
   const dialogueItem = useScreenplayItem(screenplay, firstDialogueIndex);
@@ -37,11 +31,13 @@ const CharacterPreview: React.FC<{ character: Character }> = ({ character }) => 
   );
 };
 
-export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
-  characters,
-  onSelectCharacter
-}) => {
+export const CharacterSelector = () => {
   const dispatch = useAppDispatch();
+  const characters = useAppSelector((state) => state.app.characters);
+  
+  const handleSelectCharacter = (character: Character) => {
+    dispatch(setSelectedCharacter(character));
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -72,7 +68,7 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
           {characters.map((character) => (
             <button
               key={character.role}
-              onClick={() => onSelectCharacter(character)}
+              onClick={() => handleSelectCharacter(character)}
               className="group relative overflow-hidden rounded-2xl h-48 p-8 text-left transition-all duration-300 hover:scale-105 hover:shadow-2xl transform-gpu"
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${getColorClasses(character.color).from} ${getColorClasses(character.color).to} opacity-90 group-hover:opacity-100 transition-opacity duration-300`} />

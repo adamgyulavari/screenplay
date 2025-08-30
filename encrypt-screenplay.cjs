@@ -5,10 +5,12 @@ const crypto = require('crypto');
 const INPUT_FILE = './src/data/screenplay.json';
 const OUTPUT_FILE = './src/data/screenplay-encrypted.json';
 const PASSPHRASE = process.argv[2] || 'default-passcode';
+const CUSTOM_TEXT = process.argv[3]; // Optional second parameter for custom text
 
 if (!process.argv[2]) {
-  console.log('Usage: node encrypt-screenplay.cjs <passcode>');
+  console.log('Usage: node encrypt-screenplay.cjs <passcode> [custom-text]');
   console.log('No passcode provided, using default: "default-passcode"');
+  console.log('If custom-text is provided, it will be encrypted instead of the screenplay file');
 }
 
 function encryptData(data, passphrase) {
@@ -34,21 +36,37 @@ function encryptData(data, passphrase) {
 }
 
 try {
-  // Read the original screenplay data
-  console.log(`Reading ${INPUT_FILE}...`);
-  const screenplayData = JSON.parse(fs.readFileSync(INPUT_FILE, 'utf8'));
+  let dataToEncrypt;
+  
+  if (CUSTOM_TEXT) {
+    // Encrypt the custom text parameter
+    dataToEncrypt = CUSTOM_TEXT;
+    console.log(`🔤 Encrypting custom text: "${CUSTOM_TEXT}"`);
+  } else {
+    // Read the original screenplay data
+    console.log(`📖 Reading ${INPUT_FILE}...`);
+    dataToEncrypt = JSON.parse(fs.readFileSync(INPUT_FILE, 'utf8'));
+  }
   
   // Encrypt the data
-  console.log('Encrypting data...');
-  const encryptedData = encryptData(screenplayData, PASSPHRASE);
+  console.log('🔐 Encrypting data...');
+  const encryptedData = encryptData(dataToEncrypt, PASSPHRASE);
   
-  // Write encrypted data
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(encryptedData, null, 2));
-  
-  console.log(`✅ Encrypted data written to ${OUTPUT_FILE}`);
-  console.log(`🔑 Passcode used: ${PASSPHRASE}`);
-  console.log(`📊 Original size: ${JSON.stringify(screenplayData).length} bytes`);
-  console.log(`🔒 Encrypted size: ${JSON.stringify(encryptedData).length} bytes`);
+  if (CUSTOM_TEXT) {
+    // For custom text, just print the encrypted result
+    console.log('\n🔒 Encrypted Result:');
+    console.log(JSON.stringify(encryptedData, null, 2));
+    console.log(`\n🔑 Passcode used: ${PASSPHRASE}`);
+    console.log(`📊 Original size: ${CUSTOM_TEXT.length} characters`);
+    console.log(`🔒 Encrypted size: ${JSON.stringify(encryptedData).length} bytes`);
+  } else {
+    // Write encrypted data to file for screenplay
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(encryptedData, null, 2));
+    console.log(`✅ Encrypted data written to ${OUTPUT_FILE}`);
+    console.log(`🔑 Passcode used: ${PASSPHRASE}`);
+    console.log(`📊 Original size: ${JSON.stringify(dataToEncrypt).length} bytes`);
+    console.log(`🔒 Encrypted size: ${JSON.stringify(encryptedData).length} bytes`);
+  }
   
 } catch (error) {
   console.error('❌ Error:', error.message);

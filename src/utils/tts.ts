@@ -1,69 +1,76 @@
+// TTS Configuration - easily switch between providers
+const TTS_CONFIG = {
+  provider: 'google' as 'google' | 'browser',
+  googleEndpoint: 'https://texttospeech.googleapis.com/v1/text:synthesize',
+  language: 'hu-HU',
+};
+
 class TTSService {
   private synthesis: SpeechSynthesis;
   private utterance: SpeechSynthesisUtterance | null = null;
   private isSupported: boolean;
+  private currentAudio: HTMLAudioElement | null = null;
 
   constructor() {
     this.synthesis = window.speechSynthesis;
     this.isSupported = 'speechSynthesis' in window;
   }
 
-  /**
-   * Process text for TTS by removing italics and limiting to last ~100 characters
-   * around natural break points (sentences, commas)
-   */
-  processTextForTTS(text: string, maxLength: number = 100): string {
-    // Remove italics (text between asterisks)
+  processTextForTTS(text: string, maxLength: number = 120): string {
     let cleanText = text.replace(/\*[^*]+\*/g, '');
     
-    // If text is already short enough, return it
     if (cleanText.length <= maxLength) {
       return cleanText;
     }
     
-    // Find the best break point in the last portion of text
-    const lastPortion = cleanText.slice(-maxLength * 1.5); // Look at last 150% of maxLength
+    const words = cleanText.split(/\s+/);
     
-    // Try to find a good break point
-    let bestBreakIndex = -1;
+    let currentLength = 0;
+    let wordIndex = words.length - 1;
+    const targetLength = maxLength * 0.8;
     
-    // Look for sentence endings first (highest priority)
-    const sentenceMatches = [...lastPortion.matchAll(/[.!?]\s+/g)];
-    for (const match of sentenceMatches) {
-      const matchIndex = match.index!;
-      if (matchIndex >= maxLength * 0.5) { // Prefer breaks in the last 50% of maxLength
-        bestBreakIndex = matchIndex + match[0].length; // Start after the punctuation
+    while (wordIndex >= 0 && currentLength < targetLength) {
+      currentLength += words[wordIndex].length + 1;
+      wordIndex--;
+    }
+    
+    let startWordIndex = Math.max(0, wordIndex + 1);
+    let foundBreakPoint = false;
+    
+    for (let i = startWordIndex; i < words.length; i++) {
+      const word = words[i];
+      currentLength += word.length + 1;
+      
+      if (/[.!?]$/.test(word)) {
+        startWordIndex = i + 1;
+        foundBreakPoint = true;
+        break;
+      }
+      
+      if (/,$/.test(word)) {
+        startWordIndex = i + 1;
+        foundBreakPoint = true;
+        break;
+      }
+      
+      if (currentLength > maxLength && !foundBreakPoint) {
         break;
       }
     }
     
-    // If no sentence break found, look for commas
-    if (bestBreakIndex === -1) {
-      const commaMatches = [...lastPortion.matchAll(/,\s+/g)];
-      for (const match of commaMatches) {
-        const matchIndex = match.index!;
-        if (matchIndex >= maxLength * 0.5) {
-          bestBreakIndex = matchIndex + match[0].length; // Start after the comma
-          break;
-        }
+    if (!foundBreakPoint) {
+      currentLength = 0;
+      wordIndex = words.length - 1;
+      
+      while (wordIndex >= 0 && currentLength < targetLength) {
+        currentLength += words[wordIndex].length + 1;
+        wordIndex--;
       }
+      
+      startWordIndex = Math.max(0, wordIndex + 1);
     }
     
-    // If still no good break point found, just take the last maxLength characters
-    if (bestBreakIndex === -1) {
-      return cleanText.slice(-maxLength);
-    }
-    
-    // Return text from the break point to the end
-    const startIndex = cleanText.length - lastPortion.length + bestBreakIndex;
-    const result = cleanText.slice(startIndex);
-    
-    // Ensure we don't return empty string
-    return result || cleanText.slice(-maxLength);
-  }
-
-  isAvailable(): boolean {
-    return this.isSupported;
+    return words.slice(startWordIndex).join(' ');
   }
 
   getAvailableVoices(): SpeechSynthesisVoice[] {
@@ -71,6 +78,9 @@ class TTSService {
   }
 
   getHungarianVoices(): SpeechSynthesisVoice[] {
+    if (TTS_CONFIG.provider === 'google') {
+      return this.getAvailableVoices().filter(voice => voice.lang.startsWith('hu'));
+    }
     return this.getAvailableVoices().filter(voice => 
       voice.lang.startsWith('hu') || voice.lang.startsWith('hu-HU')
     );
@@ -86,7 +96,76 @@ class TTSService {
     return voices.find(voice => voice.default) || voices[0] || null;
   }
 
-  speak(text: string, language: string = 'hu-HU'): void {
+  async speak(text: string, apiKey: string | null): Promise<void> {
+    const processedText = this.processTextForTTS(text);
+    if (TTS_CONFIG.provider === 'google' && apiKey) {
+      await this.speakWithGoogle(processedText, TTS_CONFIG.language, apiKey);
+    } else {
+      this.speakWithBrowser(processedText, TTS_CONFIG.language);
+    }
+  }
+
+  private async speakWithGoogle(text: string, language: string, apiKey: string): Promise<void> {
+
+    try {
+      // Stop any current audio
+      this.stop();
+
+      const response = await fetch(TTS_CONFIG.googleEndpoint, {
+        method: 'POST',
+        headers: {
+          'X-goog-api-key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          input: { text },
+          voice: { 
+            languageCode: language,
+            name: 'hu-HU-Standard-B'
+          },
+          audioConfig: { 
+            audioEncoding: 'MP3',
+            speakingRate: 1.05,
+            pitch: 0,
+            volumeGainDb: 0
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google TTS API error: ${response.status}`);
+      }
+
+      const audioData = await response.json();
+      
+      // Convert base64 audio to blob
+      const audioBytes = atob(audioData.audioContent);
+      const audioArray = new Uint8Array(audioBytes.length);
+      for (let i = 0; i < audioBytes.length; i++) {
+        audioArray[i] = audioBytes.charCodeAt(i);
+      }
+      
+      const audioBlob = new Blob([audioArray], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Play the audio
+      this.currentAudio = new Audio(audioUrl);
+      this.currentAudio.play();
+      
+      // Cleanup when done
+      this.currentAudio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        this.currentAudio = null;
+      };
+
+    } catch (error) {
+      console.error('Google TTS error:', error);
+      // Fallback to browser TTS if Google fails
+      this.speakWithBrowser(text, language);
+    }
+  }
+
+  private speakWithBrowser(text: string, language: string): void {
     if (!this.isSupported) {
       console.warn('Speech synthesis not supported in this browser');
       return;
@@ -95,13 +174,10 @@ class TTSService {
     // Stop any current speech
     this.stop();
 
-    // Process text for TTS
-    const processedText = this.processTextForTTS(text);
-
     // Create new utterance
-    this.utterance = new SpeechSynthesisUtterance(processedText);
+    this.utterance = new SpeechSynthesisUtterance(text);
     this.utterance.lang = language;
-    this.utterance.rate = 1.05; // Slightly slower for better pronunciation
+    this.utterance.rate = 1.05;
     this.utterance.pitch = 1.0;
     this.utterance.volume = 1.0;
 
@@ -126,30 +202,15 @@ class TTSService {
   }
 
   stop(): void {
+    if (this.currentAudio) {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio = null;
+    }
     if (this.synthesis.speaking) {
-      this.synthesis.cancel();
+        this.synthesis.cancel();
     }
     this.utterance = null;
-  }
-
-  pause(): void {
-    if (this.synthesis.speaking) {
-      this.synthesis.pause();
-    }
-  }
-
-  resume(): void {
-    if (this.synthesis.paused) {
-      this.synthesis.resume();
-    }
-  }
-
-  isSpeaking(): boolean {
-    return this.synthesis.speaking;
-  }
-
-  isPaused(): boolean {
-    return this.synthesis.paused;
   }
 }
 

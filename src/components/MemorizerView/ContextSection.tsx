@@ -9,7 +9,7 @@ import { ttsService } from '../../utils/tts';
 export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex: number }) => {
   const screenplay = useAppSelector((state) => state.app.screenplay);
   const ttsEnabled = useAppSelector((state) => state.app.ttsEnabled);
-  const ttsLanguage = useAppSelector((state) => state.app.ttsLanguage);
+  const apiKey = useAppSelector((state) => state.app.apiKey);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Calculate context range - show more context for better UX
@@ -81,7 +81,7 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
           // Stop any current speech and start reading the new context
           ttsService.stop();
           setTimeout(() => {
-            ttsService.speak(previousDialogue.text, ttsLanguage);
+            ttsService.speak(previousDialogue.text, apiKey);
           }, 100); // Small delay to ensure smooth transition
         }
       }
@@ -89,7 +89,7 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
       // Stop TTS when disabled
       ttsService.stop();
     }
-  }, [currentDialogueIndex, ttsEnabled, ttsLanguage, screenplay]);
+  }, [currentDialogueIndex, ttsEnabled, screenplay]);
 
   // Cleanup TTS when component unmounts
   useEffect(() => {

@@ -1,48 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppDispatch } from '../store/hooks';
-import { logout, setAuthenticated, setCharacters, setScreenplay } from '../store/appSlice';
-import { decryptData, storeAccessData, loadAccessData } from '../utils/encryption';
+import { login } from '../store/appSlice';
+import { decryptData } from '../utils/encryption';
 import { processScreenplayData } from '../utils/screenplay';
 import { translations } from '../utils/translations';
 import encryptedScreenplayData from '../data/screenplay-encrypted.json';
 
-interface PasscodeInputProps {
-  onSuccess: () => void;
-}
-
-export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
+export function PasscodeInput() {
   const dispatch = useAppDispatch();
   const [passcode, setPasscode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    checkExistingData();
-  }, []);
-
-  const checkExistingData = async () => {
-    try {
-      const decryptedData = loadAccessData();
-      
-      if (decryptedData) {
-        // We have decrypted data, load it directly
-        const screenplayData = JSON.parse(decryptedData);
-        const indexedScreenplay = screenplayData.map((item: any, index: number) => ({
-          ...item,
-          index
-        }));
-        
-        const processedData = processScreenplayData(indexedScreenplay);
-        dispatch(setScreenplay(indexedScreenplay));
-        dispatch(setCharacters(processedData));
-        dispatch(setAuthenticated(true));
-        onSuccess();
-      }
-    } catch (error) {
-      console.error('Authentication check failed:', error);
-      dispatch(logout());
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +22,14 @@ export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
     try {
       // Try to decrypt the encrypted screenplay data
       const decryptedData = await decryptData(encryptedScreenplayData, passcode);
+      const decryptedApiKeyData = await decryptData({
+        "encrypted": "0bb880260b2632dc8f3439e22b31b17d651532b88539d6164046ee6aa563530baade64d3a52cfe35bc64cf84b0e6eb27",
+        "salt": "4660ea7a3caaa04d62cb007b5f436b08",
+        "iv": "ed44a6756eafd5fbcf86a1cbe553a040"
+      }, passcode);
       const screenplayData = JSON.parse(decryptedData);
-      
+      const decryptedApiKey = JSON.parse(decryptedApiKeyData);
+
       // Add index property to each dialogue item
       const indexedScreenplay = screenplayData.map((item: any, index: number) => ({
         ...item,
@@ -63,14 +37,7 @@ export function PasscodeInput({ onSuccess }: PasscodeInputProps) {
       }));
       
       const processedData = processScreenplayData(indexedScreenplay);
-      dispatch(setScreenplay(indexedScreenplay));
-      dispatch(setCharacters(processedData));
-      storeAccessData(decryptedData);
-      
-      dispatch(setAuthenticated(true));
-      setPasscode(passcode);
-      
-      onSuccess();
+      dispatch(login({ apiKey: decryptedApiKey, characters: processedData, screenplay: indexedScreenplay }));
     } catch (error) {
       setError(translations.passcodeInputError);
     } finally {

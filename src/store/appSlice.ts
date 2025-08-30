@@ -12,7 +12,7 @@ interface AppState {
   showLine: boolean;
   isAuthenticated: boolean;
   ttsEnabled: boolean;
-  ttsLanguage: string;
+  apiKey: string | null;
 }
 
 const initialState: AppState = {
@@ -25,19 +25,13 @@ const initialState: AppState = {
   showLine: false,
   isAuthenticated: false,
   ttsEnabled: false,
-  ttsLanguage: 'hu-HU',
+  apiKey: null,
 };
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    setCharacters: (state, action: PayloadAction<Character[]>) => {
-      state.characters = action.payload;
-    },
-    setScreenplay: (state, action: PayloadAction<DialogueItem[]>) => {
-      state.screenplay = action.payload;
-    },
     setSelectedCharacter: (state, action: PayloadAction<Character | null>) => {
       state.selectedCharacter = action.payload;
       if (state.selectedCharacter) {
@@ -96,14 +90,14 @@ const appSlice = createSlice({
         }
       }
     },
-    setAuthenticated: (state, action: PayloadAction<boolean>) => {
-      state.isAuthenticated = action.payload;
-    },
     toggleTTS: (state) => {
       state.ttsEnabled = !state.ttsEnabled;
     },
-    setTTSLanguage: (state, action: PayloadAction<string>) => {
-      state.ttsLanguage = action.payload;
+    login: (state, action: PayloadAction<{ apiKey: string, characters: Character[], screenplay: DialogueItem[] }>) => {
+      state.isAuthenticated = true;
+      state.apiKey = action.payload.apiKey;
+      state.characters = action.payload.characters;
+      state.screenplay = action.payload.screenplay;
     },
     logout: (state) => {
       state.isAuthenticated = false;
@@ -111,6 +105,7 @@ const appSlice = createSlice({
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
       state.segments = [];
+      state.apiKey = null;
     },
   },
 });
@@ -119,13 +114,10 @@ export const {
   advance,
   clearSelectedCharacter,
   moveBack,
-  setCharacters,
   jump,
-  setScreenplay,
   setSelectedCharacter,
-  setAuthenticated,
   toggleTTS,
-  setTTSLanguage,
+  login,
   logout,
 } = appSlice.actions;
 export default appSlice.reducer; 

@@ -6,7 +6,6 @@ import appReducer from './appSlice';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['isAuthenticated', 'selectedCharacter', 'currentDialogueIndex', 'currentSegmentIndex', 'segments', 'showLine'], // Only persist user progress, not the data
 };
 
 const persistedAppReducer = persistReducer(persistConfig, appReducer);
