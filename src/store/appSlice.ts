@@ -40,6 +40,7 @@ const appSlice = createSlice({
         state.currentDialogueIndex = state.selectedCharacter.dialogues[0];
         state.segments = splitLongText(state.screenplay[state.currentDialogueIndex].text);
         state.currentSegmentIndex = 0;
+        state.showLine = false;
       }
     },
     clearSelectedCharacter: (state) => {
@@ -47,6 +48,7 @@ const appSlice = createSlice({
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
       state.segments = [];
+      state.showLine = false;
     },
     jump: (state, action: PayloadAction<number>) => {
       state.currentDialogueIndex = action.payload;
