@@ -1,6 +1,10 @@
 import mixpanel from 'mixpanel-browser';
 
-mixpanel.init('aac1d0c262a6a83502187bc9cb31aaac');
+mixpanel.init('aac1d0c262a6a83502187bc9cb31aaac', {
+  track_pageview: false,
+  debug: true,
+  api_host: 'https://api-eu.mixpanel.com',
+});
 
 export const analytics = {
   trackLogin: () => {
