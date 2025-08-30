@@ -11,6 +11,8 @@ interface AppState {
   segments: string[];
   showLine: boolean;
   isAuthenticated: boolean;
+  ttsEnabled: boolean;
+  ttsLanguage: string;
 }
 
 const initialState: AppState = {
@@ -22,6 +24,8 @@ const initialState: AppState = {
   segments: [],
   showLine: false,
   isAuthenticated: false,
+  ttsEnabled: false,
+  ttsLanguage: 'hu-HU',
 };
 
 const appSlice = createSlice({
@@ -95,6 +99,12 @@ const appSlice = createSlice({
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
     },
+    toggleTTS: (state) => {
+      state.ttsEnabled = !state.ttsEnabled;
+    },
+    setTTSLanguage: (state, action: PayloadAction<string>) => {
+      state.ttsLanguage = action.payload;
+    },
     logout: (state) => {
       state.isAuthenticated = false;
       state.selectedCharacter = null;
@@ -114,6 +124,8 @@ export const {
   setScreenplay,
   setSelectedCharacter,
   setAuthenticated,
+  toggleTTS,
+  setTTSLanguage,
   logout,
 } = appSlice.actions;
 export default appSlice.reducer; 

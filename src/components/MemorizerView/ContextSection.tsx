@@ -4,9 +4,12 @@ import { CharacterContextItem } from './CharacterContextItem';
 import { FormattedText } from './FormattedText';
 import { useAppSelector } from '../../store/hooks';
 import { useScreenplayItems } from '../../hooks/useScreenplayItem';
+import { ttsService } from '../../utils/tts';
 
 export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex: number }) => {
   const screenplay = useAppSelector((state) => state.app.screenplay);
+  const ttsEnabled = useAppSelector((state) => state.app.ttsEnabled);
+  const ttsLanguage = useAppSelector((state) => state.app.ttsLanguage);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Calculate context range - show more context for better UX
@@ -67,6 +70,33 @@ export const ContextSection = ({ currentDialogueIndex }: { currentDialogueIndex:
       }, 100);
     }
   }, [currentDialogueIndex]);
+
+  // Auto-play TTS when a new context item is highlighted
+  useEffect(() => {
+    if (ttsEnabled && currentDialogueIndex > 0) {
+      const previousDialogueIndex = currentDialogueIndex - 1;
+      if (previousDialogueIndex >= 0 && previousDialogueIndex < screenplay.length) {
+        const previousDialogue = screenplay[previousDialogueIndex];
+        if (previousDialogue) {
+          // Stop any current speech and start reading the new context
+          ttsService.stop();
+          setTimeout(() => {
+            ttsService.speak(previousDialogue.text, ttsLanguage);
+          }, 100); // Small delay to ensure smooth transition
+        }
+      }
+    } else if (!ttsEnabled) {
+      // Stop TTS when disabled
+      ttsService.stop();
+    }
+  }, [currentDialogueIndex, ttsEnabled, ttsLanguage, screenplay]);
+
+  // Cleanup TTS when component unmounts
+  useEffect(() => {
+    return () => {
+      ttsService.stop();
+    };
+  }, []);
   
   if (!contextItems.length) return null;
   

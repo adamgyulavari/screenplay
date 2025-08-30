@@ -8,6 +8,11 @@ export const translations = {
   backToCharacters: 'Szereplők',
   reset: 'Újrakezdés',
   
+  // TTS
+  ttsOn: 'Hang',
+  ttsOff: 'Hang',
+  ttsTooltip: 'Szöveg felolvasása be/kikapcsolása',
+  
   // Navigation Instructions
   previous: 'Előző',
   next: 'Következő',
