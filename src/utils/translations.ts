@@ -1,31 +1,33 @@
 export const translations = {
   // Character Selector
   title: 'Szövegkönyv Memorizáló',
-  subtitle: 'Válaszd ki a szereped, hogy elkezdhesd memorizálni a szövegeidet kontextuális párbeszéddel',
+  subtitle:
+    'Válaszd ki a szereped, hogy elkezdhesd memorizálni a szövegeidet kontextuális párbeszéddel',
   lines: 'sor',
-  
+
   // Header
   backToCharacters: 'Szereplők',
   reset: 'Újrakezdés',
-  
+
   // TTS
   ttsOn: 'Hang',
   ttsOff: 'Hang',
   ttsTooltip: 'Szöveg felolvasása be/kikapcsolása',
-  
+
   // Navigation Instructions
   previous: 'Előző',
   next: 'Következő',
   or: 'vagy',
-  longLinesNote: 'A hosszú sorok részekre vannak bontva a könnyebb memorizálás érdekében',
-  
+  longLinesNote:
+    'A hosszú sorok részekre vannak bontva a könnyebb memorizálás érdekében',
+
   // Progress Bar
   lineOf: 'sor',
   of: 'a',
   complete: 'kész',
   jumpToLine: 'Ugrás a',
   sorhoz: 'sorhoz',
-  
+
   // Current Line Section
   yourLine: 'A te sorod',
   segment: 'rész',
@@ -33,7 +35,7 @@ export const translations = {
   space: 'Szóköz',
   toRevealLine: 'gombot a sor megjelenítéséhez',
   advance: 'Tovább',
-  
+
   // Memorizer View
   noMoreDialogue: 'Nincs több párbeszéd',
   backToCharacterSelection: 'Vissza a karakterválasztáshoz',
@@ -45,9 +47,9 @@ export const translations = {
   passcodeInputError: 'A jelszó nem megfelelő',
   passcodeInputLoading: 'A jelszó ellenőrzése...',
   passcodeInputContinue: 'Folytatás',
-  
+
   // Logout
   logout: 'Kilépés',
 } as const;
 
-export type TranslationKey = keyof typeof translations; 
+export type TranslationKey = keyof typeof translations;

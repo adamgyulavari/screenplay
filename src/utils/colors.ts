@@ -22,8 +22,8 @@ export const getColorClasses = (color: string) => {
     zinc: { from: 'from-zinc-500', to: 'to-zinc-700' },
     neutral: { from: 'from-neutral-500', to: 'to-neutral-700' },
     stone: { from: 'from-stone-500', to: 'to-stone-700' },
-    gray: { from: 'from-gray-500', to: 'to-gray-700' }
+    gray: { from: 'from-gray-500', to: 'to-gray-700' },
   };
-  
+
   return colorMap[color] || colorMap.blue;
-}; 
+};

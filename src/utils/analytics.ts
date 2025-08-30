@@ -13,13 +13,13 @@ export const analytics = {
 
   trackCharacterSelected: (characterName: string) => {
     mixpanel.track('Character Selected', {
-      name: characterName
+      name: characterName,
     });
   },
 
   trackCharacterAdvanced: (characterName: string) => {
     mixpanel.track('Character Advanced', {
-      name: characterName
+      name: characterName,
     });
-  }
-}; 
+  },
+};

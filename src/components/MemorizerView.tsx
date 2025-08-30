@@ -8,15 +8,18 @@ import { translations } from '../utils/translations';
 
 export const MemorizerView = () => {
   const dispatch = useAppDispatch();
-  const currentDialogueIndex = useAppSelector((state) => state.app.currentDialogueIndex);
-  const currentTextSegments = useAppSelector((state) => state.app.segments);
-
+  const currentDialogueIndex = useAppSelector(
+    state => state.app.currentDialogueIndex
+  );
+  const currentTextSegments = useAppSelector(state => state.app.segments);
 
   if (currentDialogueIndex === null) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">{translations.noMoreDialogue}</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            {translations.noMoreDialogue}
+          </h2>
           <button
             onClick={() => dispatch(clearSelectedCharacter())}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

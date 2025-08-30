@@ -36,12 +36,14 @@ const appSlice = createSlice({
       state.selectedCharacter = action.payload;
       if (state.selectedCharacter) {
         state.currentDialogueIndex = state.selectedCharacter.dialogues[0];
-        state.segments = splitLongText(state.screenplay[state.currentDialogueIndex].text);
+        state.segments = splitLongText(
+          state.screenplay[state.currentDialogueIndex].text
+        );
         state.currentSegmentIndex = 0;
         state.showLine = false;
       }
     },
-    clearSelectedCharacter: (state) => {
+    clearSelectedCharacter: state => {
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
@@ -50,11 +52,13 @@ const appSlice = createSlice({
     },
     jump: (state, action: PayloadAction<number>) => {
       state.currentDialogueIndex = action.payload;
-      state.segments = splitLongText(state.screenplay[state.currentDialogueIndex].text);
+      state.segments = splitLongText(
+        state.screenplay[state.currentDialogueIndex].text
+      );
       state.currentSegmentIndex = 0;
       state.showLine = false;
     },
-    advance: (state) => {
+    advance: state => {
       if (!state.selectedCharacter) return;
       if (state.currentDialogueIndex === null) return;
       if (!state.showLine) {
@@ -64,10 +68,18 @@ const appSlice = createSlice({
       if (state.currentSegmentIndex < state.segments.length - 1) {
         state.currentSegmentIndex++;
       } else {
-        const index = state.selectedCharacter.dialogues.findIndex(dialogue => dialogue === state.currentDialogueIndex);
-        if (index !== undefined && index < state.selectedCharacter.dialogues.length - 1) {
-          state.currentDialogueIndex = state.selectedCharacter.dialogues[index + 1];
-          state.segments = splitLongText(state.screenplay[state.currentDialogueIndex].text);
+        const index = state.selectedCharacter.dialogues.findIndex(
+          dialogue => dialogue === state.currentDialogueIndex
+        );
+        if (
+          index !== undefined &&
+          index < state.selectedCharacter.dialogues.length - 1
+        ) {
+          state.currentDialogueIndex =
+            state.selectedCharacter.dialogues[index + 1];
+          state.segments = splitLongText(
+            state.screenplay[state.currentDialogueIndex].text
+          );
           state.currentSegmentIndex = 0;
           state.showLine = false;
         } else {
@@ -75,16 +87,21 @@ const appSlice = createSlice({
         }
       }
     },
-    moveBack: (state) => {
+    moveBack: state => {
       if (!state.selectedCharacter) return;
       if (state.currentDialogueIndex === null) return;
       if (state.currentSegmentIndex > 0) {
         state.currentSegmentIndex--;
       } else {
-        const index = state.selectedCharacter.dialogues.findIndex(dialogue => dialogue === state.currentDialogueIndex);
+        const index = state.selectedCharacter.dialogues.findIndex(
+          dialogue => dialogue === state.currentDialogueIndex
+        );
         if (index !== undefined && index > 0) {
-          state.currentDialogueIndex = state.selectedCharacter.dialogues[index - 1];
-          state.segments = splitLongText(state.screenplay[state.currentDialogueIndex].text);
+          state.currentDialogueIndex =
+            state.selectedCharacter.dialogues[index - 1];
+          state.segments = splitLongText(
+            state.screenplay[state.currentDialogueIndex].text
+          );
           state.currentSegmentIndex = state.segments.length - 1;
           state.showLine = true;
         }
@@ -93,16 +110,23 @@ const appSlice = createSlice({
     setTTS: (state, action: PayloadAction<boolean>) => {
       state.ttsEnabled = action.payload;
     },
-    toggleTTS: (state) => {
+    toggleTTS: state => {
       state.ttsEnabled = !state.ttsEnabled;
     },
-    login: (state, action: PayloadAction<{ apiKey: string, characters: Character[], screenplay: DialogueItem[] }>) => {
+    login: (
+      state,
+      action: PayloadAction<{
+        apiKey: string;
+        characters: Character[];
+        screenplay: DialogueItem[];
+      }>
+    ) => {
       state.isAuthenticated = true;
       state.apiKey = action.payload.apiKey;
       state.characters = action.payload.characters;
       state.screenplay = action.payload.screenplay;
     },
-    logout: (state) => {
+    logout: state => {
       state.isAuthenticated = false;
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
@@ -113,7 +137,7 @@ const appSlice = createSlice({
   },
 });
 
-export const { 
+export const {
   advance,
   clearSelectedCharacter,
   moveBack,
@@ -124,4 +148,4 @@ export const {
   login,
   logout,
 } = appSlice.actions;
-export default appSlice.reducer; 
+export default appSlice.reducer;

@@ -7,28 +7,27 @@ import { logout } from './store/appSlice';
 
 function App() {
   const dispatch = useAppDispatch();
-  const { characters, isAuthenticated, screenplay, apiKey, selectedCharacter } = useAppSelector((state: any) => state.app);
+  const { characters, isAuthenticated, screenplay, apiKey, selectedCharacter } =
+    useAppSelector((state: any) => state.app);
 
   useEffect(() => {
-    if (isAuthenticated && (!characters.length || !screenplay.length || !apiKey)) {
+    if (
+      isAuthenticated &&
+      (!characters.length || !screenplay.length || !apiKey)
+    ) {
       dispatch(logout());
     }
   }, [isAuthenticated, characters.length, screenplay.length, apiKey, dispatch]);
 
-
   if (!isAuthenticated) {
-    return (
-      <PasscodeInput />
-    );
+    return <PasscodeInput />;
   }
 
   if (selectedCharacter) {
     return <MemorizerView />;
   }
 
-  return (
-    <CharacterSelector />
-  );
+  return <CharacterSelector />;
 }
 
 export default App;

@@ -40,6 +40,6 @@ interface SpeechSynthesis extends EventTarget {
 interface Window {
   speechSynthesis: SpeechSynthesis;
   SpeechSynthesisUtterance: {
-    new(text?: string): SpeechSynthesisUtterance;
+    new (text?: string): SpeechSynthesisUtterance;
   };
 }

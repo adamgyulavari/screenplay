@@ -6,7 +6,7 @@ interface FormattedTextProps {
 
 export const FormattedText: React.FC<FormattedTextProps> = ({ text }) => {
   const parts = text.split(/(\*[^*]+\*)/g);
-  
+
   return (
     <>
       {parts.map((part, index) => {
@@ -23,4 +23,4 @@ export const FormattedText: React.FC<FormattedTextProps> = ({ text }) => {
       })}
     </>
   );
-}; 
+};
