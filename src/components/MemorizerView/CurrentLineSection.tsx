@@ -1,11 +1,12 @@
 import { ArrowRight, ArrowLeft } from 'lucide-react';
-import { FormattedText } from './FormattedText';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { advance, moveBack } from '../../store/appSlice';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
+import { getRevealedEndOffset } from '../../utils/screenplay';
 import { useEffect } from 'react';
 import { analytics } from '../../utils/analytics';
+import { InlineAnnotatedText } from '../NotesView/ScreenplayTextColumn';
 
 export const CurrentLineSection = () => {
   const character = useAppSelector(state => state.app.selectedCharacter);
@@ -14,7 +15,24 @@ export const CurrentLineSection = () => {
     state => state.app.currentSegmentIndex
   );
   const showLine = useAppSelector(state => state.app.showLine);
+  const currentDialogueIndex = useAppSelector(state => state.app.currentDialogueIndex);
+  const screenplay = useAppSelector(state => state.app.screenplay);
+  const notes = useAppSelector(state => state.app.notes);
   const dispatch = useAppDispatch();
+
+  const lineText = currentDialogueIndex != null && screenplay[currentDialogueIndex]
+    ? screenplay[currentDialogueIndex].text
+    : '';
+  const revealedEnd = getRevealedEndOffset(
+    lineText,
+    currentTextSegments,
+    showLine ? currentSegmentIndex + 1 : 0
+  );
+  const revealedText = lineText.slice(0, revealedEnd);
+  const lineNotes = currentDialogueIndex != null
+    ? notes
+        .filter(n => n.dialogueIndex === currentDialogueIndex && n.endIndex <= revealedEnd)
+    : [];
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -73,12 +91,14 @@ export const CurrentLineSection = () => {
                 </div>
               )}
 
-              {/* Show all revealed segments */}
+              {/* Same inline-notes display as NotesView (note above snippet), read-only; only revealed segment(s) */}
               <div className="space-y-3 text-white text-lg leading-relaxed font-medium">
-                <FormattedText
-                  text={currentTextSegments
-                    .slice(0, currentSegmentIndex + 1)
-                    .join(' ')}
+                <InlineAnnotatedText
+                  text={revealedText}
+                  notes={lineNotes}
+                  highlightedNoteId={null}
+                  onHighlightNote={() => {}}
+                  currentSelection={null}
                 />
               </div>
             </div>
@@ -131,12 +151,13 @@ export const CurrentLineSection = () => {
                 </div>
               )}
 
-              {/* Show all revealed segments */}
               <div className="space-y-2 text-white text-base leading-relaxed font-medium">
-                <FormattedText
-                  text={currentTextSegments
-                    .slice(0, currentSegmentIndex + 1)
-                    .join(' ')}
+                <InlineAnnotatedText
+                  text={revealedText}
+                  notes={lineNotes}
+                  highlightedNoteId={null}
+                  onHighlightNote={() => {}}
+                  currentSelection={null}
                 />
               </div>
             </div>

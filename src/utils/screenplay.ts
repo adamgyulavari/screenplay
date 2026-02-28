@@ -62,6 +62,34 @@ export const splitLongText = (
   return segments.filter(segment => segment.length > 0);
 };
 
+/**
+ * Given full source text and segments from splitLongText, returns the end offset
+ * in the source that corresponds to "first segmentCount segments revealed".
+ * Used to show only the revealed portion of the line with inline notes.
+ */
+export function getRevealedEndOffset(
+  source: string,
+  segments: string[],
+  segmentCount: number
+): number {
+  if (segmentCount <= 0 || segments.length === 0) return 0;
+  const k = Math.min(segmentCount, segments.length);
+  let pos = 0;
+  for (let i = 0; i < k; i++) {
+    const seg = segments[i];
+    const segTrim = seg.trim();
+    if (!segTrim) continue;
+    while (pos < source.length && /\s/.test(source[pos])) pos++;
+    const idx = source.indexOf(segTrim, pos);
+    if (idx !== -1) {
+      pos = idx + segTrim.length;
+    } else {
+      pos = Math.min(pos + seg.length, source.length);
+    }
+  }
+  return pos;
+}
+
 // Helper function to split text by punctuation (sentence level, then comma level)
 const splitTextByPunctuation = (text: string, maxLength: number): string[] => {
   if (text.length <= maxLength) {

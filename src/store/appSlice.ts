@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Character, DialogueItem } from '../types/screenplay';
 import { splitLongText } from '../utils/screenplay';
+import type { NoteClient } from '../lib/screenplayNotes';
 
 interface AppState {
   screenplayId: string | null;
@@ -9,6 +10,7 @@ interface AppState {
   characters: Character[];
   selectedCharacter: Character | null;
   screenplay: DialogueItem[];
+  notes: NoteClient[];
   currentDialogueIndex: number | null;
   currentSegmentIndex: number;
   segments: string[];
@@ -25,6 +27,7 @@ const initialState: AppState = {
   characters: [],
   selectedCharacter: null,
   screenplay: [],
+  notes: [],
   currentDialogueIndex: 0,
   currentSegmentIndex: 0,
   segments: [],
@@ -162,11 +165,28 @@ const appSlice = createSlice({
     setNotesView: (state, action: PayloadAction<boolean>) => {
       state.notesViewOpen = action.payload;
     },
+    setNotes: (state, action: PayloadAction<NoteClient[]>) => {
+      state.notes = action.payload;
+    },
+    addNote: (state, action: PayloadAction<NoteClient>) => {
+      state.notes.push(action.payload);
+    },
+    updateNote: (state, action: PayloadAction<{ id: string; noteContent: string; updatedAt?: string }>) => {
+      const n = state.notes.find(note => note.id === action.payload.id);
+      if (n) {
+        n.noteContent = action.payload.noteContent;
+        if (action.payload.updatedAt != null) n.updatedAt = action.payload.updatedAt;
+      }
+    },
+    removeNote: (state, action: PayloadAction<string>) => {
+      state.notes = state.notes.filter(n => n.id !== action.payload);
+    },
     logout: state => {
       state.isAuthenticated = false;
       state.screenplayId = null;
       state.isOwner = false;
       state.notesViewOpen = false;
+      state.notes = [];
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
@@ -185,6 +205,10 @@ export const {
   jump,
   setSelectedCharacter,
   setNotesView,
+  setNotes,
+  addNote,
+  updateNote,
+  removeNote,
   setTTS,
   toggleTTS,
   login,

@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from './store/hooks';
 import { logout } from './store/appSlice';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { usePersistProgress } from './hooks/usePersistProgress';
+import { useScreenplayNotes } from './hooks/useScreenplayNotes';
 import { translations } from './utils/translations';
 import type { RootState } from './store';
 
@@ -14,8 +15,9 @@ function App() {
   const dispatch = useAppDispatch();
   const { loading: authLoading, error: authError } = useSupabaseAuth();
   usePersistProgress();
-  const { characters, isAuthenticated, screenplay, selectedCharacter, notesViewOpen } =
+  const { characters, isAuthenticated, screenplay, selectedCharacter, notesViewOpen, screenplayId } =
     useAppSelector((state: RootState) => state.app);
+  useScreenplayNotes(screenplayId);
 
   useEffect(() => {
     if (isAuthenticated && (!characters.length || !screenplay.length)) {

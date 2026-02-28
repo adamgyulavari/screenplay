@@ -1,7 +1,9 @@
 import { useRef, useCallback } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { FormattedText } from '../MemorizerView/FormattedText';
 import { CharacterContextItem } from '../MemorizerView/CharacterContextItem';
+import { translations } from '../../utils/translations';
 
 export interface SelectionInfo {
   dialogueIndex: number;
@@ -16,6 +18,9 @@ export interface Note {
   startIndex: number;
   endIndex: number;
   noteContent: string;
+  authorEmail?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface ScreenplayTextColumnProps {
@@ -25,6 +30,9 @@ interface ScreenplayTextColumnProps {
   onHighlightNote: (id: string | null) => void;
   /** When the add-note popover is open, show this selection as highlighted (browser selection is lost on focus) */
   currentSelection: { dialogueIndex: number; startIndex: number; endIndex: number } | null;
+  /** When set, notes show edit/delete controls (e.g. in NotesView). Omit in MemorizerView for read-only. */
+  onEditNote?: (note: Note) => void;
+  onDeleteNote?: (id: string) => void;
 }
 
 export function ScreenplayTextColumn({
@@ -33,6 +41,8 @@ export function ScreenplayTextColumn({
   highlightedNoteId,
   onHighlightNote,
   currentSelection,
+  onEditNote,
+  onDeleteNote,
 }: ScreenplayTextColumnProps) {
   const screenplay = useAppSelector(state => state.app.screenplay);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -176,6 +186,8 @@ export function ScreenplayTextColumn({
                 currentSelection={
                   isCurrentSelection ? { startIndex: currentSelection.startIndex, endIndex: currentSelection.endIndex } : null
                 }
+                onEditNote={onEditNote}
+                onDeleteNote={onDeleteNote}
               />
               </span>
             </p>
@@ -249,18 +261,23 @@ function buildSegments(
   return segments;
 }
 
-function InlineAnnotatedText({
+/** Renders text with inline notes (note chip above snippet). Export for use in MemorizerView read-only. */
+export function InlineAnnotatedText({
   text,
   notes,
   highlightedNoteId,
   onHighlightNote,
   currentSelection,
+  onEditNote,
+  onDeleteNote,
 }: {
   text: string;
   notes: Note[];
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
   currentSelection: { startIndex: number; endIndex: number } | null;
+  onEditNote?: (note: Note) => void;
+  onDeleteNote?: (id: string) => void;
 }) {
   const segments = buildSegments(text, notes, currentSelection);
 
@@ -280,32 +297,65 @@ function InlineAnnotatedText({
             </mark>
           );
         }
-        const { note, text } = seg;
+        const { note, text: segText } = seg;
         const isHighlighted = highlightedNoteId === note.id;
+        const canEdit = Boolean(onEditNote);
+        const canDelete = Boolean(onDeleteNote);
         return (
           <span
             key={note.id}
             className="relative inline-block align-baseline pt-5"
           >
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                onHighlightNote(isHighlighted ? null : note.id);
-              }}
-              className={`absolute left-0 top-0 text-left rounded px-1.5 py-0.5 text-xs transition-colors ${
-                isHighlighted
-                  ? 'bg-amber-500/40 text-amber-200'
-                  : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50'
-              }`}
-            >
-              {note.noteContent}
-            </button>
+            <div className="absolute left-0 top-0 flex items-center gap-0.5 text-left">
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  onHighlightNote(isHighlighted ? null : note.id);
+                }}
+                className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
+                  isHighlighted
+                    ? 'bg-amber-500/40 text-amber-200'
+                    : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50'
+                }`}
+              >
+                {note.noteContent}
+              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.stopPropagation();
+                    onEditNote?.(note);
+                  }}
+                  className="p-0.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-600/50 transition-colors"
+                  title={translations.editNote}
+                  aria-label={translations.editNote}
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={e => {
+                    e.stopPropagation();
+                    onDeleteNote?.(note.id);
+                  }}
+                  className="p-0.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600/50 transition-colors"
+                  title={translations.deleteNote}
+                  aria-label={translations.deleteNote}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
             <span
               className={`rounded px-0.5 ${
                 isHighlighted ? 'bg-amber-500/40' : ''
               }`}
             >
-              <FormattedText text={text} />
+              <FormattedText text={segText} />
             </span>
           </span>
         );

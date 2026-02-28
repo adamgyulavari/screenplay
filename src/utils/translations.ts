@@ -75,6 +75,12 @@ export const translations = {
   notePlaceholder: 'Írd be a jegyzetet...',
   noNotes: 'Nincs jegyzet. Jelölj ki szöveget a bal oldalon, majd kattints a „Jegyzet hozzáadása” gombra.',
   cancel: 'Mégse',
+  save: 'Mentés',
+  saving: 'Mentés…',
+  editNote: 'Jegyzet szerkesztése',
+  deleteNote: 'Törlés',
+  deleteNoteConfirm: 'Biztosan törlöd ezt a jegyzetet?',
+  notesOnThisLine: 'Jegyzetek ezen a soron',
 } as const;
 
 export type TranslationKey = keyof typeof translations;
