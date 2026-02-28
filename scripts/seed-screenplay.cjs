@@ -14,7 +14,9 @@ async function main() {
   const userEmail = process.argv[3];
 
   if (!jsonPath || !userEmail) {
-    console.error('Usage: node scripts/seed-screenplay.cjs <path-to-screenplay.json> <user-email>');
+    console.error(
+      'Usage: node scripts/seed-screenplay.cjs <path-to-screenplay.json> <user-email>'
+    );
     process.exit(1);
   }
 
@@ -26,11 +28,18 @@ async function main() {
 
   const raw = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
   const content = Array.isArray(raw) ? raw : raw.content;
-  const title = Array.isArray(raw) ? 'My screenplay' : (raw.title || 'My screenplay');
+  const title = Array.isArray(raw)
+    ? 'My screenplay'
+    : raw.title || 'My screenplay';
   const author = Array.isArray(raw) ? null : (raw.author ?? null);
 
-  if (!Array.isArray(content) || content.some((item) => !item.role || item.text === undefined)) {
-    console.error('JSON must be an array of { role, text } or an object with content: [...].');
+  if (
+    !Array.isArray(content) ||
+    content.some(item => !item.role || item.text === undefined)
+  ) {
+    console.error(
+      'JSON must be an array of { role, text } or an object with content: [...].'
+    );
     process.exit(1);
   }
 
@@ -38,7 +47,9 @@ async function main() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error('Set SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY. Run with: yarn seed -- <json> <email>');
+    console.error(
+      'Set SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY. Run with: yarn seed -- <json> <email>'
+    );
     process.exit(1);
   }
 
@@ -57,10 +68,14 @@ async function main() {
     process.exit(1);
   }
 
-  const user = users.find((u) => u.email?.toLowerCase() === userEmail.toLowerCase());
+  const user = users.find(
+    u => u.email?.toLowerCase() === userEmail.toLowerCase()
+  );
   if (!user) {
     console.error('No user found with email:', userEmail);
-    console.error('Sign in once with Google so the user exists, then run this script.');
+    console.error(
+      'Sign in once with Google so the user exists, then run this script.'
+    );
     process.exit(1);
   }
 

@@ -1,13 +1,37 @@
 // Default content for new users (array of { role, text } for screenplays.content jsonb)
 export const DEFAULT_SCREENPLAY_CONTENT = [
-  { role: 'Boci', text: '*Papként beszél a tévében, közben halljuk a hívek jel...jtásotok, akivel kiszórakozhatjátok magatokat! *Sírva fakad.*' },
-  { role: 'Imola', text: '*Otthon nézi a tévét.* Ezek hülyék? Hogy merték ezt leadni a tévében?' },
-  { role: 'Boci', text: '*Sír.* Bocsássatok meg! Bocsássatok meg nekem! Kiabál...mban éreztem utoljára! *Imola kikapcsolja a tévét. Enikő be.*' },
-  { role: 'Imola', text: 'Életemben nem láttam még ekkora baromságot! Kislányom, te láttad ezt az elmebajt?' },
-  { role: 'Enikő', text: 'Ja, a sorozatot? Nem, de mindenki erről beszélt tegnap az iskolában.' },
-  { role: 'Imola', text: 'Elképesztő! Hát hülyék ezek, vagy hülyének nézik az embereket?' },
+  {
+    role: 'Boci',
+    text: '*Papként beszél a tévében, közben halljuk a hívek jel...jtásotok, akivel kiszórakozhatjátok magatokat! *Sírva fakad.*',
+  },
+  {
+    role: 'Imola',
+    text: '*Otthon nézi a tévét.* Ezek hülyék? Hogy merték ezt leadni a tévében?',
+  },
+  {
+    role: 'Boci',
+    text: '*Sír.* Bocsássatok meg! Bocsássatok meg nekem! Kiabál...mban éreztem utoljára! *Imola kikapcsolja a tévét. Enikő be.*',
+  },
+  {
+    role: 'Imola',
+    text: 'Életemben nem láttam még ekkora baromságot! Kislányom, te láttad ezt az elmebajt?',
+  },
+  {
+    role: 'Enikő',
+    text: 'Ja, a sorozatot? Nem, de mindenki erről beszélt tegnap az iskolában.',
+  },
+  {
+    role: 'Imola',
+    text: 'Elképesztő! Hát hülyék ezek, vagy hülyének nézik az embereket?',
+  },
   { role: 'Enikő', text: 'De miért nézed, ha annyira idegesít?' },
-  { role: 'Imola', text: 'Azért, mert az egyik páciensem bátyja ez a színész, és kíváncsi voltam rá.' },
+  {
+    role: 'Imola',
+    text: 'Azért, mert az egyik páciensem bátyja ez a színész, és kíváncsi voltam rá.',
+  },
   { role: 'Enikő', text: 'Tényleg? A Vargyas László?' },
-  { role: 'Imola', text: 'Igen. De esküszöm, beírok a tévébe, hogy vegyék le ezt a mocskot! *Belép Karcsi.*' },
+  {
+    role: 'Imola',
+    text: 'Igen. De esküszöm, beírok a tévébe, hogy vegyék le ezt a mocskot! *Belép Karcsi.*',
+  },
 ] as const;

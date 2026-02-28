@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
   return (
     <div className="py-4 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
       {/* Desktop Header */}
-      <div className="hidden md:block max-w-6xl mx-auto">
+      <div className="hidden md:block mx-3">
         <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
@@ -63,25 +63,22 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
             {translations.backToCharacters}
           </button>
 
+          <div
+            className={`ms-3 flex items-center gap-3 px-4 py-2 rounded-lg bg-gradient-to-br ${getColorClasses(character.color).from} ${getColorClasses(character.color).to} text-white`}
+          >
+            <User className="w-5 h-5" />
+            <span className="font-semibold">{character.role}</span>
+          </div>
           <ProgressBar />
 
           <div className="flex items-center gap-4">
-            <div
-              className={`flex items-center gap-3 px-4 py-2 rounded-lg bg-gradient-to-br ${getColorClasses(character.color).from} ${getColorClasses(character.color).to} text-white`}
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
             >
-              <User className="w-5 h-5" />
-              <span className="font-semibold">{character.role}</span>
-            </div>
-
-            {onManageUsers && (
-              <button
-                onClick={onManageUsers}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
-              >
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">{translations.manageUsers}</span>
-              </button>
-            )}
+              <RotateCcw className="w-4 h-4" />
+              {translations.reset}
+            </button>
             <button
               onClick={handleToggleTTS}
               title={translations.ttsTooltip}
@@ -105,15 +102,17 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
                 </>
               )}
             </button>
-
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
-            >
-              <RotateCcw className="w-4 h-4" />
-              {translations.reset}
-            </button>
-
+            {onManageUsers && (
+              <button
+                onClick={onManageUsers}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">
+                  {translations.manageUsers}
+                </span>
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 bg-red-600/50 hover:bg-red-500/50 text-white rounded-lg transition-colors duration-200"

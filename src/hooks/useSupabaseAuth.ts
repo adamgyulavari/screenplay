@@ -53,9 +53,9 @@ async function loadScreenplayAndLogin(
     if (insertError) throw insertError;
     screenplayId = inserted!.id;
     isOwner = true;
-    content =
-      (inserted!.content as { role: string; text: string }[]) ??
-      [...DEFAULT_SCREENPLAY_CONTENT];
+    content = (inserted!.content as { role: string; text: string }[]) ?? [
+      ...DEFAULT_SCREENPLAY_CONTENT,
+    ];
   } else {
     const first = accessRows[0];
     const sp = first.screenplays as unknown as {
@@ -110,7 +110,7 @@ export function useSupabaseAuth() {
         .then(() => {
           if (mounted) setLoading(false);
         })
-        .catch((e) => {
+        .catch(e => {
           if (mounted) {
             setError(e?.message ?? 'Failed to load screenplay');
             setLoading(false);
@@ -126,7 +126,7 @@ export function useSupabaseAuth() {
         dispatch(logout());
         return;
       }
-      loadScreenplayAndLogin(session.user.id, dispatch).catch((e) => {
+      loadScreenplayAndLogin(session.user.id, dispatch).catch(e => {
         if (mounted) setError(e?.message ?? 'Failed to load screenplay');
       });
     });

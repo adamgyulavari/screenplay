@@ -17,10 +17,7 @@ function App() {
     useAppSelector((state: RootState) => state.app);
 
   useEffect(() => {
-    if (
-      isAuthenticated &&
-      (!characters.length || !screenplay.length)
-    ) {
+    if (isAuthenticated && (!characters.length || !screenplay.length)) {
       dispatch(logout());
     }
   }, [isAuthenticated, characters.length, screenplay.length, dispatch]);

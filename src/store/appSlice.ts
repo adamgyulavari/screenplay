@@ -148,7 +148,10 @@ const appSlice = createSlice({
       if (action.payload.currentSegmentIndex != null) {
         state.currentSegmentIndex = action.payload.currentSegmentIndex;
       }
-      if (state.selectedCharacter != null && state.currentDialogueIndex != null) {
+      if (
+        state.selectedCharacter != null &&
+        state.currentDialogueIndex != null
+      ) {
         state.segments = splitLongText(
           state.screenplay[state.currentDialogueIndex].text
         );

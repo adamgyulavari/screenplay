@@ -6,7 +6,9 @@ const DEBOUNCE_MS = 500;
 
 export function usePersistProgress() {
   const screenplayId = useAppSelector(state => state.app.screenplayId);
-  const selectedCharacter = useAppSelector(state => state.app.selectedCharacter);
+  const selectedCharacter = useAppSelector(
+    state => state.app.selectedCharacter
+  );
   const currentDialogueIndex = useAppSelector(
     state => state.app.currentDialogueIndex
   );
@@ -19,23 +21,23 @@ export function usePersistProgress() {
     if (!screenplayId) return;
 
     const persist = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
 
-      await supabase
-        .from('screenplay_access')
-        .upsert(
-          {
-            screenplay_id: screenplayId,
-            user_id: session.user.id,
-            character_role: selectedCharacter?.role ?? null,
-            current_dialogue_index: currentDialogueIndex ?? 0,
-            current_segment_index: currentSegmentIndex,
-          },
-          {
-            onConflict: 'screenplay_id,user_id',
-          }
-        );
+      await supabase.from('screenplay_access').upsert(
+        {
+          screenplay_id: screenplayId,
+          user_id: session.user.id,
+          character_role: selectedCharacter?.role ?? null,
+          current_dialogue_index: currentDialogueIndex ?? 0,
+          current_segment_index: currentSegmentIndex,
+        },
+        {
+          onConflict: 'screenplay_id,user_id',
+        }
+      );
     };
 
     if (timerRef.current) clearTimeout(timerRef.current);

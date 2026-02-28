@@ -37,8 +37,9 @@ export const MemorizerView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-
-      <Header onManageUsers={isOwner ? () => setManageUsersOpen(true) : undefined} />
+      <Header
+        onManageUsers={isOwner ? () => setManageUsersOpen(true) : undefined}
+      />
       <div className="max-w-4xl mx-auto px-6">
         <ContextSection currentDialogueIndex={currentDialogueIndex} />
 

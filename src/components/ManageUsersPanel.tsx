@@ -31,7 +31,7 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
       });
       listScreenplayUsers(screenplayId)
         .then(setUsers)
-        .catch((e) => setError(e?.message ?? 'Failed to load'));
+        .catch(e => setError(e?.message ?? 'Failed to load'));
     }
   }, [isOpen, screenplayId]);
 
@@ -101,7 +101,7 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={translations.addUserPlaceholder}
               className="flex-1 px-3 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -117,15 +117,13 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
             </button>
           </div>
 
-          {error && (
-            <p className="mb-4 text-red-400 text-sm">{error}</p>
-          )}
+          {error && <p className="mb-4 text-red-400 text-sm">{error}</p>}
 
           <ul className="space-y-2">
             {users.length === 0 ? (
               <p className="text-slate-400 text-sm">{translations.noUsers}</p>
             ) : (
-              users.map((u) => (
+              users.map(u => (
                 <li
                   key={u.user_id}
                   className="flex items-center justify-between py-2 px-3 bg-slate-700/50 rounded-lg"
