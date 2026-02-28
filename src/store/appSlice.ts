@@ -3,6 +3,7 @@ import { Character, DialogueItem } from '../types/screenplay';
 import { splitLongText } from '../utils/screenplay';
 
 interface AppState {
+  screenplayId: string | null;
   characters: Character[];
   selectedCharacter: Character | null;
   screenplay: DialogueItem[];
@@ -16,6 +17,7 @@ interface AppState {
 }
 
 const initialState: AppState = {
+  screenplayId: null,
   characters: [],
   selectedCharacter: null,
   screenplay: [],
@@ -116,18 +118,41 @@ const appSlice = createSlice({
     login: (
       state,
       action: PayloadAction<{
+        screenplayId: string;
         apiKey: string | null;
         characters: Character[];
         screenplay: DialogueItem[];
+        characterRole?: string | null;
+        currentDialogueIndex?: number;
+        currentSegmentIndex?: number;
       }>
     ) => {
       state.isAuthenticated = true;
+      state.screenplayId = action.payload.screenplayId;
       state.apiKey = action.payload.apiKey;
       state.characters = action.payload.characters;
       state.screenplay = action.payload.screenplay;
+      if (action.payload.characterRole != null) {
+        const char = action.payload.characters.find(
+          c => c.role === action.payload.characterRole
+        );
+        state.selectedCharacter = char ?? null;
+      }
+      if (action.payload.currentDialogueIndex != null) {
+        state.currentDialogueIndex = action.payload.currentDialogueIndex;
+      }
+      if (action.payload.currentSegmentIndex != null) {
+        state.currentSegmentIndex = action.payload.currentSegmentIndex;
+      }
+      if (state.selectedCharacter != null && state.currentDialogueIndex != null) {
+        state.segments = splitLongText(
+          state.screenplay[state.currentDialogueIndex].text
+        );
+      }
     },
     logout: state => {
       state.isAuthenticated = false;
+      state.screenplayId = null;
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;

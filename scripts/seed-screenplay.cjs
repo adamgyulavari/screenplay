@@ -67,7 +67,7 @@ async function main() {
   const { data, error } = await supabase
     .from('screenplays')
     .insert({
-      user_id: user.id,
+      owner_id: user.id,
       title,
       author,
       content,

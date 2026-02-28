@@ -6,7 +6,7 @@ import appReducer from './appSlice';
 const persistConfig = {
   key: 'root',
   storage,
-  blacklist: ['screenplay', 'characters', 'apiKey'],
+  blacklist: ['screenplay', 'characters', 'apiKey', 'screenplayId'],
 };
 
 const persistedAppReducer = persistReducer(persistConfig, appReducer);

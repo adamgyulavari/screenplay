@@ -10,31 +10,60 @@ async function loadScreenplayAndLogin(
   userId: string,
   dispatch: ReturnType<typeof useDispatch>
 ) {
-  const { data: rows, error } = await supabase
-    .from('screenplays')
-    .select('id, content')
+  const { data: accessRows, error } = await supabase
+    .from('screenplay_access')
+    .select(
+      `
+      screenplay_id,
+      character_role,
+      current_dialogue_index,
+      current_segment_index,
+      screenplays (
+        id,
+        content,
+        title,
+        author
+      )
+    `
+    )
     .eq('user_id', userId)
-    .limit(1);
+    .order('updated_at', { ascending: false });
 
   if (error) throw error;
 
+  let screenplayId: string;
   let content: { role: string; text: string }[];
+  let characterRole: string | null = null;
+  let currentDialogueIndex = 0;
+  let currentSegmentIndex = 0;
 
-  if (!rows || rows.length === 0) {
+  if (!accessRows || accessRows.length === 0) {
     const { data: inserted, error: insertError } = await supabase
       .from('screenplays')
       .insert({
-        user_id: userId,
+        owner_id: userId,
         title: 'My screenplay',
         content: [...DEFAULT_SCREENPLAY_CONTENT],
       })
-      .select('content')
+      .select('id, content')
       .single();
 
     if (insertError) throw insertError;
-    content = (inserted?.content as { role: string; text: string }[]) ?? [...DEFAULT_SCREENPLAY_CONTENT];
+    screenplayId = inserted!.id;
+    content =
+      (inserted!.content as { role: string; text: string }[]) ??
+      [...DEFAULT_SCREENPLAY_CONTENT];
   } else {
-    content = (rows[0].content as { role: string; text: string }[]) ?? [];
+    const first = accessRows[0];
+    const sp = first.screenplays as unknown as {
+      id: string;
+      content: { role: string; text: string }[];
+    };
+    screenplayId = sp.id;
+    content = sp.content ?? [];
+    characterRole = first.character_role ?? null;
+    currentDialogueIndex = first.current_dialogue_index ?? 0;
+    currentSegmentIndex = first.current_segment_index ?? 0;
   }
 
   const indexedScreenplay: DialogueItem[] = content.map((item, index) => ({
@@ -45,9 +74,13 @@ async function loadScreenplayAndLogin(
 
   dispatch(
     login({
+      screenplayId,
       apiKey: null,
       characters,
       screenplay: indexedScreenplay,
+      characterRole,
+      currentDialogueIndex,
+      currentSegmentIndex,
     })
   );
 }

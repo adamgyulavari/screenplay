@@ -5,12 +5,14 @@ import { Login } from './components/Login';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { logout } from './store/appSlice';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
+import { usePersistProgress } from './hooks/usePersistProgress';
 import { translations } from './utils/translations';
 import type { RootState } from './store';
 
 function App() {
   const dispatch = useAppDispatch();
   const { loading: authLoading, error: authError } = useSupabaseAuth();
+  usePersistProgress();
   const { characters, isAuthenticated, screenplay, selectedCharacter } =
     useAppSelector((state: RootState) => state.app);
 
