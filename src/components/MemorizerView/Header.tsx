@@ -6,6 +6,7 @@ import {
   LogOut,
   Volume2,
   VolumeX,
+  Users,
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import {
@@ -19,7 +20,11 @@ import { ProgressBar } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onManageUsers?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
   const dispatch = useAppDispatch();
   const character = useAppSelector((state: any) => state.app.selectedCharacter);
   const ttsEnabled = useAppSelector((state: any) => state.app.ttsEnabled);
@@ -68,6 +73,15 @@ export const Header: React.FC = () => {
               <span className="font-semibold">{character.role}</span>
             </div>
 
+            {onManageUsers && (
+              <button
+                onClick={onManageUsers}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">{translations.manageUsers}</span>
+              </button>
+            )}
             <button
               onClick={handleToggleTTS}
               title={translations.ttsTooltip}
@@ -126,6 +140,14 @@ export const Header: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {onManageUsers && (
+              <button
+                onClick={onManageUsers}
+                className="p-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+              >
+                <Users className="w-5 h-5" />
+              </button>
+            )}
             <button
               onClick={handleToggleTTS}
               title={translations.ttsTooltip}

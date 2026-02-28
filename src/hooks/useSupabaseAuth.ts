@@ -22,7 +22,8 @@ async function loadScreenplayAndLogin(
         id,
         content,
         title,
-        author
+        author,
+        owner_id
       )
     `
     )
@@ -32,6 +33,7 @@ async function loadScreenplayAndLogin(
   if (error) throw error;
 
   let screenplayId: string;
+  let isOwner = false;
   let content: { role: string; text: string }[];
   let characterRole: string | null = null;
   let currentDialogueIndex = 0;
@@ -50,6 +52,7 @@ async function loadScreenplayAndLogin(
 
     if (insertError) throw insertError;
     screenplayId = inserted!.id;
+    isOwner = true;
     content =
       (inserted!.content as { role: string; text: string }[]) ??
       [...DEFAULT_SCREENPLAY_CONTENT];
@@ -58,8 +61,10 @@ async function loadScreenplayAndLogin(
     const sp = first.screenplays as unknown as {
       id: string;
       content: { role: string; text: string }[];
+      owner_id: string;
     };
     screenplayId = sp.id;
+    isOwner = sp.owner_id === userId;
     content = sp.content ?? [];
     characterRole = first.character_role ?? null;
     currentDialogueIndex = first.current_dialogue_index ?? 0;
@@ -75,6 +80,7 @@ async function loadScreenplayAndLogin(
   dispatch(
     login({
       screenplayId,
+      isOwner,
       apiKey: null,
       characters,
       screenplay: indexedScreenplay,

@@ -1,4 +1,5 @@
-import { User, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { User, LogOut, Users } from 'lucide-react';
 import { Character } from '../types/screenplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { useScreenplayItem } from '../hooks/useScreenplayItem';
@@ -6,6 +7,7 @@ import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
 import { logout, setSelectedCharacter } from '../store/appSlice';
+import { ManageUsersPanel } from './ManageUsersPanel';
 import { supabase } from '../lib/supabase';
 import { translations } from '../utils/translations';
 import { analytics } from '../utils/analytics';
@@ -36,6 +38,8 @@ const CharacterPreview = ({ character }: { character: Character }) => {
 export const CharacterSelector = () => {
   const dispatch = useAppDispatch();
   const characters = useAppSelector(state => state.app.characters);
+  const isOwner = useAppSelector(state => state.app.isOwner);
+  const [manageUsersOpen, setManageUsersOpen] = useState(false);
 
   const handleSelectCharacter = (character: Character) => {
     dispatch(setSelectedCharacter(character));
@@ -54,6 +58,15 @@ export const CharacterSelector = () => {
           <h1 className="text-5xl font-bold text-white tracking-tight flex-1">
             {translations.title}
           </h1>
+          {isOwner && (
+            <button
+              onClick={() => setManageUsersOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+            >
+              <Users className="w-4 h-4" />
+              {translations.manageUsers}
+            </button>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 bg-red-600/50 hover:bg-red-500/50 text-white rounded-lg transition-colors duration-200"
@@ -100,6 +113,12 @@ export const CharacterSelector = () => {
           ))}
         </div>
       </div>
+      {isOwner && (
+        <ManageUsersPanel
+          isOpen={manageUsersOpen}
+          onClose={() => setManageUsersOpen(false)}
+        />
+      )}
     </div>
   );
 };

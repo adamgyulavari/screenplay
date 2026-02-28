@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { clearSelectedCharacter } from '../store/appSlice';
 import { Header } from './MemorizerView/Header';
+import { ManageUsersPanel } from './ManageUsersPanel';
 import { ContextSection } from './MemorizerView/ContextSection';
 import { CurrentLineSection } from './MemorizerView/CurrentLineSection';
 import { NavigationInstructions } from './MemorizerView/NavigationInstructions';
@@ -8,6 +10,8 @@ import { translations } from '../utils/translations';
 
 export const MemorizerView = () => {
   const dispatch = useAppDispatch();
+  const isOwner = useAppSelector(state => state.app.isOwner);
+  const [manageUsersOpen, setManageUsersOpen] = useState(false);
   const currentDialogueIndex = useAppSelector(
     state => state.app.currentDialogueIndex
   );
@@ -33,8 +37,8 @@ export const MemorizerView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Header />
 
+      <Header onManageUsers={isOwner ? () => setManageUsersOpen(true) : undefined} />
       <div className="max-w-4xl mx-auto px-6">
         <ContextSection currentDialogueIndex={currentDialogueIndex} />
 
@@ -42,6 +46,12 @@ export const MemorizerView = () => {
 
         <NavigationInstructions hasSegments={currentTextSegments.length > 1} />
       </div>
+      {isOwner && (
+        <ManageUsersPanel
+          isOpen={manageUsersOpen}
+          onClose={() => setManageUsersOpen(false)}
+        />
+      )}
     </div>
   );
 };

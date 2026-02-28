@@ -4,6 +4,7 @@ import { splitLongText } from '../utils/screenplay';
 
 interface AppState {
   screenplayId: string | null;
+  isOwner: boolean;
   characters: Character[];
   selectedCharacter: Character | null;
   screenplay: DialogueItem[];
@@ -18,6 +19,7 @@ interface AppState {
 
 const initialState: AppState = {
   screenplayId: null,
+  isOwner: false,
   characters: [],
   selectedCharacter: null,
   screenplay: [],
@@ -119,6 +121,7 @@ const appSlice = createSlice({
       state,
       action: PayloadAction<{
         screenplayId: string;
+        isOwner: boolean;
         apiKey: string | null;
         characters: Character[];
         screenplay: DialogueItem[];
@@ -129,6 +132,7 @@ const appSlice = createSlice({
     ) => {
       state.isAuthenticated = true;
       state.screenplayId = action.payload.screenplayId;
+      state.isOwner = action.payload.isOwner;
       state.apiKey = action.payload.apiKey;
       state.characters = action.payload.characters;
       state.screenplay = action.payload.screenplay;
@@ -153,6 +157,7 @@ const appSlice = createSlice({
     logout: state => {
       state.isAuthenticated = false;
       state.screenplayId = null;
+      state.isOwner = false;
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;

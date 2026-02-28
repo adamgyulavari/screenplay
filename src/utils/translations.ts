@@ -55,6 +55,17 @@ export const translations = {
 
   // Logout
   logout: 'Kilépés',
+
+  // Manage users
+  manageUsers: 'Hozzáférés kezelése',
+  manageUsersTitle: 'Hozzáférés kezelése',
+  addUserPlaceholder: 'E-mail cím',
+  addUser: 'Hozzáadás',
+  removeUser: 'Eltávolítás',
+  noUsers: 'Nincs hozzáadott felhasználó.',
+  addUserError: 'Nem sikerült hozzáadni',
+  removeUserError: 'Nem sikerült eltávolítani',
+  userNotFound: 'Nincs ilyen e-mail címmel regisztrált felhasználó.',
 } as const;
 
 export type TranslationKey = keyof typeof translations;
