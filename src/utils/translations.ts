@@ -40,13 +40,18 @@ export const translations = {
   noMoreDialogue: 'Nincs több párbeszéd',
   backToCharacterSelection: 'Vissza a karakterválasztáshoz',
 
-  // Passcode Input
+  // Passcode Input (legacy)
   passcodeInputText: 'Add meg a jelszót a hozzáféréshez',
   passcodeInput: 'Jelszó',
   passcodeInputPlaceholder: 'Add meg a jelszót',
   passcodeInputError: 'A jelszó nem megfelelő',
   passcodeInputLoading: 'A jelszó ellenőrzése...',
   passcodeInputContinue: 'Folytatás',
+
+  // Login (Supabase / Google)
+  signInWithGoogle: 'Bejelentkezés Google-lal',
+  signInError: 'Bejelentkezés sikertelen',
+  loadingAuth: 'Betöltés...',
 
   // Logout
   logout: 'Kilépés',

@@ -116,7 +116,7 @@ const appSlice = createSlice({
     login: (
       state,
       action: PayloadAction<{
-        apiKey: string;
+        apiKey: string | null;
         characters: Character[];
         screenplay: DialogueItem[];
       }>
@@ -132,6 +132,8 @@ const appSlice = createSlice({
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
       state.segments = [];
+      state.characters = [];
+      state.screenplay = [];
       state.apiKey = null;
     },
   },

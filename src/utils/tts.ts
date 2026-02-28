@@ -1,5 +1,6 @@
 import { store } from '../store';
 import { setTTS } from '../store/appSlice';
+import { supabase } from '../lib/supabase';
 
 // TTS Configuration - easily switch between providers
 const TTS_CONFIG = {
@@ -112,8 +113,45 @@ class TTSService {
     const processedText = this.processTextForTTS(text);
     if (TTS_CONFIG.provider === 'google' && apiKey) {
       await this.speakWithGoogle(processedText, TTS_CONFIG.language, apiKey);
+    } else if (TTS_CONFIG.provider === 'google' && !apiKey) {
+      await this.speakViaEdgeFunction(processedText, TTS_CONFIG.language);
     } else {
       this.speakWithBrowser(processedText, TTS_CONFIG.language);
+    }
+  }
+
+  private async speakViaEdgeFunction(
+    text: string,
+    language: string
+  ): Promise<void> {
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        'synthesize-speech',
+        {
+          body: { text, language },
+        }
+      );
+
+      if (error) throw error;
+      if (!data?.audioContent) throw new Error('No audio from Edge Function');
+
+      this.stop();
+      const audioBytes = atob(data.audioContent);
+      const audioArray = new Uint8Array(audioBytes.length);
+      for (let i = 0; i < audioBytes.length; i++) {
+        audioArray[i] = audioBytes.charCodeAt(i);
+      }
+      const audioBlob = new Blob([audioArray], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      this.currentAudio = new Audio(audioUrl);
+      this.currentAudio.play();
+      this.currentAudio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        this.currentAudio = null;
+      };
+    } catch (e) {
+      console.error('Edge Function TTS error:', e);
+      this.speakWithBrowser(text, language);
     }
   }
 

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "seed": "sh -c 'set -a && . ./.env.local && set +a && exec node scripts/seed-screenplay.cjs \"$@\"' sh",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -12,6 +13,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.47.0",
     "@reduxjs/toolkit": "^2.8.2",
     "lucide-react": "^0.344.0",
     "mixpanel-browser": "^2.69.1",

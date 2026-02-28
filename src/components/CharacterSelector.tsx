@@ -6,7 +6,7 @@ import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
 import { logout, setSelectedCharacter } from '../store/appSlice';
-import { clearAccessData } from '../utils/encryption';
+import { supabase } from '../lib/supabase';
 import { translations } from '../utils/translations';
 import { analytics } from '../utils/analytics';
 
@@ -42,9 +42,9 @@ export const CharacterSelector = () => {
     analytics.trackCharacterSelected(character.role);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     dispatch(logout());
-    clearAccessData();
   };
 
   return (

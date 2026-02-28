@@ -14,7 +14,7 @@ import {
   logout,
   toggleTTS,
 } from '../../store/appSlice';
-import { clearAccessData } from '../../utils/encryption';
+import { supabase } from '../../lib/supabase';
 import { ProgressBar } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
@@ -34,9 +34,9 @@ export const Header: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     dispatch(logout());
-    clearAccessData();
   };
 
   const handleToggleTTS = () => {
