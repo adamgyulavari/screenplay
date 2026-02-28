@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { User, LogOut, Users } from 'lucide-react';
+import { User, LogOut, Users, FileText } from 'lucide-react';
 import { Character } from '../types/screenplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { useScreenplayItem } from '../hooks/useScreenplayItem';
 import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
-import { logout, setSelectedCharacter } from '../store/appSlice';
+import { logout, setSelectedCharacter, setNotesView } from '../store/appSlice';
 import { ManageUsersPanel } from './ManageUsersPanel';
 import { supabase } from '../lib/supabase';
 import { translations } from '../utils/translations';
@@ -58,6 +58,13 @@ export const CharacterSelector = () => {
           <h1 className="text-5xl font-bold text-white tracking-tight flex-1">
             {translations.title}
           </h1>
+          <button
+            onClick={() => dispatch(setNotesView(true))}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+          >
+            <FileText className="w-4 h-4" />
+            {translations.notes}
+          </button>
           {isOwner && (
             <button
               onClick={() => setManageUsersOpen(true)}

@@ -5,6 +5,7 @@ import { splitLongText } from '../utils/screenplay';
 interface AppState {
   screenplayId: string | null;
   isOwner: boolean;
+  notesViewOpen: boolean;
   characters: Character[];
   selectedCharacter: Character | null;
   screenplay: DialogueItem[];
@@ -20,6 +21,7 @@ interface AppState {
 const initialState: AppState = {
   screenplayId: null,
   isOwner: false,
+  notesViewOpen: false,
   characters: [],
   selectedCharacter: null,
   screenplay: [],
@@ -157,10 +159,14 @@ const appSlice = createSlice({
         );
       }
     },
+    setNotesView: (state, action: PayloadAction<boolean>) => {
+      state.notesViewOpen = action.payload;
+    },
     logout: state => {
       state.isAuthenticated = false;
       state.screenplayId = null;
       state.isOwner = false;
+      state.notesViewOpen = false;
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
@@ -178,6 +184,7 @@ export const {
   moveBack,
   jump,
   setSelectedCharacter,
+  setNotesView,
   setTTS,
   toggleTTS,
   login,

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { CharacterSelector } from './components/CharacterSelector';
 import { MemorizerView } from './components/MemorizerView';
+import { NotesView } from './components/NotesView';
 import { Login } from './components/Login';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { logout } from './store/appSlice';
@@ -13,7 +14,7 @@ function App() {
   const dispatch = useAppDispatch();
   const { loading: authLoading, error: authError } = useSupabaseAuth();
   usePersistProgress();
-  const { characters, isAuthenticated, screenplay, selectedCharacter } =
+  const { characters, isAuthenticated, screenplay, selectedCharacter, notesViewOpen } =
     useAppSelector((state: RootState) => state.app);
 
   useEffect(() => {
@@ -42,6 +43,10 @@ function App() {
 
   if (!isAuthenticated) {
     return <Login />;
+  }
+
+  if (notesViewOpen) {
+    return <NotesView />;
   }
 
   if (selectedCharacter) {

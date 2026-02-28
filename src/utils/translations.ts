@@ -66,6 +66,15 @@ export const translations = {
   addUserError: 'Nem sikerült hozzáadni',
   removeUserError: 'Nem sikerült eltávolítani',
   userNotFound: 'Nincs ilyen e-mail címmel regisztrált felhasználó.',
+
+  // Notes view
+  notes: 'Jegyzetek',
+  notesViewTitle: 'Jegyzetek',
+  notesBackToCharacters: 'Vissza a szereplőkhöz',
+  addNote: 'Jegyzet hozzáadása',
+  notePlaceholder: 'Írd be a jegyzetet...',
+  noNotes: 'Nincs jegyzet. Jelölj ki szöveget a bal oldalon, majd kattints a „Jegyzet hozzáadása” gombra.',
+  cancel: 'Mégse',
 } as const;
 
 export type TranslationKey = keyof typeof translations;
