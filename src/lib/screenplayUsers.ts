@@ -6,6 +6,13 @@ export interface ScreenplayUser {
   character_role: string | null;
 }
 
+export interface ScreenplayInvitation {
+  email: string;
+  created_at: string;
+}
+
+export type AddUserResult = 'added' | 'invited';
+
 export async function listScreenplayUsers(
   screenplayId: string
 ): Promise<ScreenplayUser[]> {
@@ -19,12 +26,13 @@ export async function listScreenplayUsers(
 export async function addScreenplayUser(
   screenplayId: string,
   email: string
-): Promise<void> {
-  const { error } = await supabase.rpc('add_screenplay_user_by_email', {
+): Promise<AddUserResult> {
+  const { data, error } = await supabase.rpc('add_screenplay_user_by_email', {
     p_screenplay_id: screenplayId,
     p_email: email.trim(),
   });
   if (error) throw error;
+  return data as AddUserResult;
 }
 
 export async function removeScreenplayUser(
@@ -36,5 +44,27 @@ export async function removeScreenplayUser(
     .delete()
     .eq('screenplay_id', screenplayId)
     .eq('user_id', userId);
+  if (error) throw error;
+}
+
+export async function listScreenplayInvitations(
+  screenplayId: string
+): Promise<ScreenplayInvitation[]> {
+  const { data, error } = await supabase.rpc('get_screenplay_invitations', {
+    p_screenplay_id: screenplayId,
+  });
+  if (error) throw error;
+  return (data ?? []) as ScreenplayInvitation[];
+}
+
+export async function removeScreenplayInvitation(
+  screenplayId: string,
+  email: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('screenplay_invitations')
+    .delete()
+    .eq('screenplay_id', screenplayId)
+    .eq('email', email.toLowerCase().trim());
   if (error) throw error;
 }

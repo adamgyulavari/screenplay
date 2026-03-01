@@ -6,7 +6,10 @@ import {
   listScreenplayUsers,
   addScreenplayUser,
   removeScreenplayUser,
+  listScreenplayInvitations,
+  removeScreenplayInvitation,
   type ScreenplayUser,
+  type ScreenplayInvitation,
 } from '../lib/screenplayUsers';
 import { translations } from '../utils/translations';
 
@@ -18,20 +21,32 @@ interface ManageUsersPanelProps {
 export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
   const screenplayId = useAppSelector(state => state.app.screenplayId);
   const [users, setUsers] = useState<ScreenplayUser[]>([]);
+  const [invitations, setInvitations] = useState<ScreenplayInvitation[]>([]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const refreshData = async (id: string) => {
+    const [u, inv] = await Promise.all([
+      listScreenplayUsers(id),
+      listScreenplayInvitations(id),
+    ]);
+    setUsers(u);
+    setInvitations(inv);
+  };
 
   useEffect(() => {
     if (isOpen && screenplayId) {
       setError(null);
+      setSuccess(null);
       supabase.auth.getSession().then(({ data: { session } }) => {
         setCurrentUserId(session?.user?.id ?? null);
       });
-      listScreenplayUsers(screenplayId)
-        .then(setUsers)
-        .catch(e => setError(e?.message ?? 'Failed to load'));
+      refreshData(screenplayId).catch(e =>
+        setError(e?.message ?? 'Failed to load')
+      );
     }
   }, [isOpen, screenplayId]);
 
@@ -40,13 +55,16 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
     if (!trimmed) return;
     setLoading(true);
     setError(null);
+    setSuccess(null);
     try {
-      await addScreenplayUser(screenplayId!, trimmed);
+      const result = await addScreenplayUser(screenplayId!, trimmed);
       setEmail('');
-      setUsers(await listScreenplayUsers(screenplayId!));
-    } catch (e) {
-      const msg = e?.message ?? translations.addUserError;
-      setError(msg.includes('not found') ? translations.userNotFound : msg);
+      if (result === 'invited') {
+        setSuccess(translations.invitationSaved);
+      }
+      await refreshData(screenplayId!);
+    } catch (e: any) {
+      setError(e?.message ?? translations.addUserError);
     } finally {
       setLoading(false);
     }
@@ -59,11 +77,26 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
   const handleRemove = async (userId: string) => {
     setLoading(true);
     setError(null);
+    setSuccess(null);
     try {
       await removeScreenplayUser(screenplayId!, userId);
-      setUsers(await listScreenplayUsers(screenplayId!));
-    } catch (e) {
+      await refreshData(screenplayId!);
+    } catch (e: any) {
       setError(e?.message ?? translations.removeUserError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveInvitation = async (invEmail: string) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await removeScreenplayInvitation(screenplayId!, invEmail);
+      await refreshData(screenplayId!);
+    } catch (e: any) {
+      setError(e?.message ?? translations.removeInvitationError);
     } finally {
       setLoading(false);
     }
@@ -118,9 +151,10 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
           </div>
 
           {error && <p className="mb-4 text-red-400 text-sm">{error}</p>}
+          {success && <p className="mb-4 text-green-400 text-sm">{success}</p>}
 
           <ul className="space-y-2">
-            {users.length === 0 ? (
+            {users.length === 0 && invitations.length === 0 ? (
               <p className="text-slate-400 text-sm">{translations.noUsers}</p>
             ) : (
               users.map(u => (
@@ -141,6 +175,39 @@ export function ManageUsersPanel({ isOpen, onClose }: ManageUsersPanelProps) {
               ))
             )}
           </ul>
+
+          {invitations.length > 0 && (
+            <>
+              <h3 className="text-sm font-medium text-slate-400 mt-6 mb-2">
+                {translations.pendingInvitations}
+              </h3>
+              <ul className="space-y-2">
+                {invitations.map(inv => (
+                  <li
+                    key={inv.email}
+                    className="flex items-center justify-between py-2 px-3 bg-slate-700/30 rounded-lg"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-slate-300 truncate">
+                        {inv.email}
+                      </span>
+                      <span className="shrink-0 text-xs px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full">
+                        {translations.pending}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveInvitation(inv.email)}
+                      disabled={loading}
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label={`${translations.removeInvitation} ${inv.email}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
     </>

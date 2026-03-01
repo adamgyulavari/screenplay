@@ -67,6 +67,11 @@ export const translations = {
   addUserError: 'Nem sikerült hozzáadni',
   removeUserError: 'Nem sikerült eltávolítani',
   userNotFound: 'Nincs ilyen e-mail címmel regisztrált felhasználó.',
+  invitationSaved: 'Hozzáférés elmentve. A felhasználó a regisztráció után automatikusan megkapja.',
+  pendingInvitations: 'Függőben lévő meghívók',
+  removeInvitation: 'Meghívó visszavonása',
+  removeInvitationError: 'Nem sikerült visszavonni a meghívót',
+  pending: 'Függőben',
 
   // Screenplay selector
   screenplaySelector: 'Szövegkönyvek',
