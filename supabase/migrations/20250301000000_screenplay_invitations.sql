@@ -42,6 +42,8 @@ create policy "Owners can delete invitations for their screenplays"
   );
 
 -- 2. Updated add_screenplay_user_by_email: returns 'added' or 'invited'
+--    Must drop first because the return type changes from void to text.
+drop function if exists public.add_screenplay_user_by_email(uuid, text);
 create or replace function public.add_screenplay_user_by_email(
   p_screenplay_id uuid,
   p_email text
