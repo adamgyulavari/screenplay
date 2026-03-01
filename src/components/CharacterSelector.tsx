@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { User, LogOut, Users, FileText, ArrowLeft } from 'lucide-react';
-import { Character } from '../types/screenplay';
+import { Character, DialogueItem } from '../types/screenplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { useScreenplayItem } from '../hooks/useScreenplayItem';
 import { useTextSegments } from '../hooks/useScreenplayItem';
@@ -11,6 +11,7 @@ import { ManageUsersPanel } from './ManageUsersPanel';
 import { supabase } from '../lib/supabase';
 import { translations } from '../utils/translations';
 import { analytics } from '../utils/analytics';
+import { splitLongText } from '../utils/screenplay';
 
 const CharacterPreview = ({ character }: { character: Character }) => {
   const screenplay = useAppSelector((state: any) => state.app.screenplay);
@@ -35,13 +36,30 @@ const CharacterPreview = ({ character }: { character: Character }) => {
   );
 };
 
+function useSegmentCounts(characters: Character[], screenplay: DialogueItem[]) {
+  return useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const char of characters) {
+      let total = 0;
+      for (const idx of char.dialogues) {
+        const item = screenplay[idx];
+        if (item) total += splitLongText(item.text).length;
+      }
+      counts.set(char.role, total);
+    }
+    return counts;
+  }, [characters, screenplay]);
+}
+
 export const CharacterSelector = () => {
   const dispatch = useAppDispatch();
   const characters = useAppSelector(state => state.app.characters);
+  const screenplay = useAppSelector(state => state.app.screenplay);
   const isOwner = useAppSelector(state => state.app.isOwner);
   const hasMultipleScreenplays = useAppSelector(
     state => state.app.availableScreenplays.length > 1
   );
+  const segmentCounts = useSegmentCounts(characters, screenplay);
   const [manageUsersOpen, setManageUsersOpen] = useState(false);
 
   const handleSelectCharacter = (character: Character) => {
@@ -119,6 +137,11 @@ export const CharacterSelector = () => {
                   </h3>
                 </div>
 
+                {isOwner && (
+                  <p className="text-white/70 text-sm mb-1">
+                    {character.dialogues.length} {translations.lines} · {segmentCounts.get(character.role) ?? 0} {translations.segments}
+                  </p>
+                )}
                 <CharacterPreview character={character} />
               </div>
 

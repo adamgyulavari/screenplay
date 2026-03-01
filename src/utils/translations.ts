@@ -31,6 +31,7 @@ export const translations = {
   // Current Line Section
   yourLine: 'A te sorod',
   segment: 'rész',
+  segments: 'rész',
   pressToReveal: 'Nyomd meg a',
   space: 'Szóköz',
   toRevealLine: 'gombot a sor megjelenítéséhez',
