@@ -227,6 +227,7 @@ export function NotesView() {
   );
 
   const handleJumpToDialogue = useCallback((dialogueIndex: number) => {
+    setScrollProgressIndex(dialogueIndex);
     const el = scrollContainerRef.current?.querySelector(
       `[data-dialogue-index="${dialogueIndex}"]`
     ) as HTMLElement | undefined;
@@ -238,7 +239,7 @@ export function NotesView() {
   if (!screenplay.length) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+    <div className="h-screen min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <AppHeader
         back={{
           label: selectedCharacter
@@ -262,7 +263,7 @@ export function NotesView() {
       />
 
       <div className="flex-1 flex min-h-0 justify-center">
-        <div className="w-full max-w-4xl flex flex-col min-h-0 px-6">
+        <div className="w-full max-w-4xl flex-1 flex flex-col min-h-0 px-6 overflow-hidden">
           <ScreenplayTextColumn
             onSelection={setSelection}
             notes={notes}

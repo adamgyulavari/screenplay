@@ -74,51 +74,54 @@ export function ScreenplayTextColumn({
   onDeleteScene,
 }: ScreenplayTextColumnProps) {
   const screenplay = useAppSelector(state => state.app.screenplay);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const justSelectedRef = useRef(false);
+  const onScrollProgressRef = useRef(onScrollProgress);
+  const [containerReady, setContainerReady] = useState(0);
+  onScrollProgressRef.current = onScrollProgress;
 
   const setContainerRef = useCallback(
     (el: HTMLDivElement | null) => {
-      (containerRef as React.MutableRefObject<HTMLDivElement | null>).current =
-        el;
+      containerRef.current = el;
       if (scrollContainerRef) {
         (
           scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>
         ).current = el;
       }
+      if (el) setContainerReady((n) => n + 1);
     },
     [scrollContainerRef]
   );
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || !onScrollProgress || screenplay.length === 0) return;
-
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
+    if (!container || !onScrollProgressRef.current || screenplay.length === 0)
+      return;
+    const handler = () => {
       const children = container.querySelectorAll('[data-dialogue-index]');
+      if (children.length === 0) return;
+      const containerRect = container.getBoundingClientRect();
+      const top = containerRect.top;
       let topIndex = 0;
       for (let i = 0; i < children.length; i++) {
-        const el = children[i] as HTMLElement;
-        const top = el.offsetTop;
-        const height = el.offsetHeight;
-        if (top <= scrollTop && scrollTop < top + height) {
+        const child = children[i] as HTMLElement;
+        const rect = child.getBoundingClientRect();
+        if (rect.top <= top && rect.bottom > top) {
           topIndex = i;
           break;
         }
-        if (top > scrollTop) {
+        if (rect.top > top) {
           topIndex = Math.max(0, i - 1);
           break;
         }
         topIndex = i;
       }
-      onScrollProgress(topIndex);
+      onScrollProgressRef.current?.(topIndex);
     };
-
-    handleScroll();
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [onScrollProgress, screenplay.length]);
+    handler();
+    container.addEventListener('scroll', handler, { passive: true });
+    return () => container.removeEventListener('scroll', handler);
+  }, [screenplay.length, containerReady]);
 
   const handleMouseUp = useCallback(() => {
     const run = () => {
@@ -235,12 +238,13 @@ export function ScreenplayTextColumn({
   if (!screenplay.length) return null;
 
   return (
-    <div
-      ref={setContainerRef}
-      className="flex-1 overflow-y-auto p-6 space-y-6"
-      onMouseUp={handleMouseUp}
-      onClick={handleClick}
-    >
+    <div className="flex-1 min-h-0 flex flex-col min-w-0">
+      <div
+        ref={setContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6"
+        onMouseUp={handleMouseUp}
+        onClick={handleClick}
+      >
       {screenplay.map((item, index) => {
         const notesForDialogue = notes.filter(n => n.dialogueIndex === index);
         const isCurrentSelection = currentSelection?.dialogueIndex === index;
@@ -333,6 +337,7 @@ export function ScreenplayTextColumn({
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
