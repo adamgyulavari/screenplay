@@ -1,9 +1,9 @@
 import { useRef, useEffect } from 'react';
 import { CharacterContextItem } from './CharacterContextItem';
-import { FormattedText } from './FormattedText';
 import { useAppSelector } from '../../store/hooks';
 import { useScreenplayItems } from '../../hooks/useScreenplayItem';
 import { ttsService } from '../../utils/tts';
+import { InlineAnnotatedText } from '../NotesView/ScreenplayTextColumn';
 
 export const ContextSection = ({
   currentDialogueIndex,
@@ -11,6 +11,7 @@ export const ContextSection = ({
   currentDialogueIndex: number;
 }) => {
   const screenplay = useAppSelector(state => state.app.screenplay);
+  const notes = useAppSelector(state => state.app.notes);
   const ttsEnabled = useAppSelector(state => state.app.ttsEnabled);
   const apiKey = useAppSelector(state => state.app.apiKey);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +153,15 @@ export const ContextSection = ({
                 {contextItem.role.split(', ').map(role => (
                   <CharacterContextItem key={role} role={role} />
                 ))}
-                <FormattedText text={contextItem.text} />
+                <InlineAnnotatedText
+                  text={contextItem.text}
+                  notes={notes.filter(
+                    n => n.dialogueIndex === actualDialogueIndex
+                  )}
+                  highlightedNoteId={null}
+                  onHighlightNote={() => {}}
+                  currentSelection={null}
+                />
               </p>
             </div>
           );
