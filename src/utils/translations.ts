@@ -42,7 +42,7 @@ export const translations = {
   backToCharacterSelection: 'Vissza a karakterválasztáshoz',
 
   // Passcode Input (legacy)
-  passcodeInputText: 'Add meg a jelszót a hozzáféréshez',
+  passcodeInputText: 'Jelentkezz be a hozzáféréshez',
   passcodeInput: 'Jelszó',
   passcodeInputPlaceholder: 'Add meg a jelszót',
   passcodeInputError: 'A jelszó nem megfelelő',
