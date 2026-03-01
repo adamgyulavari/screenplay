@@ -86,6 +86,7 @@ export const translations = {
   notes: 'Jegyzetek',
   notesViewTitle: 'Jegyzetek',
   notesBackToCharacters: 'Vissza a szereplőkhöz',
+  notesBackToMemorizer: 'Vissza a memorizáláshoz',
   addNote: 'Jegyzet hozzáadása',
   notePlaceholder: 'Írd be a jegyzetet...',
   noNotes:

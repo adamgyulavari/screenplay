@@ -1,7 +1,7 @@
 import React from 'react';
-import { RotateCcw, User, Volume2, VolumeX, Users } from 'lucide-react';
+import { FileText, RotateCcw, User, Volume2, VolumeX, Users } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { clearSelectedCharacter, jump, toggleTTS } from '../../store/appSlice';
+import { clearSelectedCharacter, jump, setNotesView, toggleTTS } from '../../store/appSlice';
 import { ProgressBar } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
@@ -52,6 +52,13 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
       center={<ProgressBar />}
       actions={
         <>
+          <button
+            onClick={() => dispatch(setNotesView(true))}
+            className={headerBtnClass}
+          >
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">{translations.notes}</span>
+          </button>
           <button onClick={handleReset} className={headerBtnClass}>
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">{translations.reset}</span>

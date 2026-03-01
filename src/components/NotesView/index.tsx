@@ -23,6 +23,7 @@ import { AppHeader } from '../AppHeader';
 export function NotesView() {
   const dispatch = useAppDispatch();
   const screenplay = useAppSelector(state => state.app.screenplay);
+  const selectedCharacter = useAppSelector(state => state.app.selectedCharacter);
   const screenplayId = useAppSelector(state => state.app.screenplayId);
   const notes = useAppSelector(state => state.app.notes);
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
@@ -128,7 +129,9 @@ export function NotesView() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
       <AppHeader
         back={{
-          label: translations.notesBackToCharacters,
+          label: selectedCharacter
+            ? translations.notesBackToMemorizer
+            : translations.notesBackToCharacters,
           onClick: handleBack,
         }}
         title={translations.notesViewTitle}
