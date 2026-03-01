@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { FormattedText } from '../MemorizerView/FormattedText';
 import { CharacterContextItem } from '../MemorizerView/CharacterContextItem';
@@ -37,6 +37,23 @@ interface ScreenplayTextColumnProps {
   /** When set, notes show edit/delete controls (e.g. in NotesView). Omit in MemorizerView for read-only. */
   onEditNote?: (note: Note) => void;
   onDeleteNote?: (id: string) => void;
+  /** Called when scroll position changes; reports the dialogue index at the top of the viewport. */
+  onScrollProgress?: (topDialogueIndex: number) => void;
+  /** Ref for the scroll container (for scroll-to-dialogue from progress bar). */
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  /** When set, show "+ scene" on dialogue hover for adding scene markers. Owner only. */
+  screenplayId?: string | null;
+  /** If true, show add/edit/delete scene controls. Typically screenplay owner only. */
+  canEditScenes?: boolean;
+  /** Scene markers for this screenplay. */
+  scenes?: { id: string; dialogueIndex: number; title: string }[];
+  onAddSceneClick?: (dialogueIndex: number) => void;
+  onEditScene?: (scene: {
+    id: string;
+    dialogueIndex: number;
+    title: string;
+  }) => void;
+  onDeleteScene?: (sceneId: string) => void;
 }
 
 export function ScreenplayTextColumn({
@@ -47,10 +64,61 @@ export function ScreenplayTextColumn({
   currentSelection,
   onEditNote,
   onDeleteNote,
+  onScrollProgress,
+  scrollContainerRef,
+  screenplayId,
+  canEditScenes = false,
+  scenes = [],
+  onAddSceneClick,
+  onEditScene,
+  onDeleteScene,
 }: ScreenplayTextColumnProps) {
   const screenplay = useAppSelector(state => state.app.screenplay);
   const containerRef = useRef<HTMLDivElement>(null);
   const justSelectedRef = useRef(false);
+
+  const setContainerRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      (containerRef as React.MutableRefObject<HTMLDivElement | null>).current =
+        el;
+      if (scrollContainerRef) {
+        (
+          scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>
+        ).current = el;
+      }
+    },
+    [scrollContainerRef]
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !onScrollProgress || screenplay.length === 0) return;
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      const children = container.querySelectorAll('[data-dialogue-index]');
+      let topIndex = 0;
+      for (let i = 0; i < children.length; i++) {
+        const el = children[i] as HTMLElement;
+        const top = el.offsetTop;
+        const height = el.offsetHeight;
+        if (top <= scrollTop && scrollTop < top + height) {
+          topIndex = i;
+          break;
+        }
+        if (top > scrollTop) {
+          topIndex = Math.max(0, i - 1);
+          break;
+        }
+        topIndex = i;
+      }
+      onScrollProgress(topIndex);
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [onScrollProgress, screenplay.length]);
 
   const handleMouseUp = useCallback(() => {
     const run = () => {
@@ -168,7 +236,7 @@ export function ScreenplayTextColumn({
 
   return (
     <div
-      ref={containerRef}
+      ref={setContainerRef}
       className="flex-1 overflow-y-auto p-6 space-y-6"
       onMouseUp={handleMouseUp}
       onClick={handleClick}
@@ -176,13 +244,69 @@ export function ScreenplayTextColumn({
       {screenplay.map((item, index) => {
         const notesForDialogue = notes.filter(n => n.dialogueIndex === index);
         const isCurrentSelection = currentSelection?.dialogueIndex === index;
+        const sceneAtDialogue = scenes.find(s => s.dialogueIndex === index);
+        const showSceneControls = Boolean(screenplayId && canEditScenes);
 
         return (
           <div
             key={`${item.role}-${index}`}
             data-dialogue-index={index}
-            className="min-h-[4rem] p-4 rounded-xl border border-slate-600/50 bg-slate-800/30 transition-colors [container-type:inline-size]"
+            className={`group relative min-h-[4rem] p-4 rounded-xl border bg-slate-800/30 transition-colors [container-type:inline-size] ${
+              sceneAtDialogue ? 'border-amber-500/60' : 'border-slate-600/50'
+            }`}
           >
+            {sceneAtDialogue && (
+              <div className="mb-2 flex items-center gap-2">
+                <span className="text-xs font-medium text-amber-400/90">
+                  {sceneAtDialogue.title}
+                </span>
+              </div>
+            )}
+            {showSceneControls && (
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                {sceneAtDialogue ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onEditScene?.(sceneAtDialogue);
+                      }}
+                      className="px-2 py-0.5 rounded text-xs bg-slate-600/50 text-slate-300 hover:bg-slate-500/50 hover:text-slate-200 transition-colors flex items-center gap-1"
+                      title={translations.editScene}
+                    >
+                      <Pencil className="w-3 h-3" />
+                      {translations.editScene}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onDeleteScene?.(sceneAtDialogue.id);
+                      }}
+                      className="p-0.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600/50 transition-colors"
+                      title={translations.deleteScene}
+                      aria-label={translations.deleteScene}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      onAddSceneClick?.(index);
+                    }}
+                    className="px-2 py-0.5 rounded text-xs bg-slate-600/50 text-slate-400 hover:bg-slate-500/50 hover:text-slate-200 transition-colors flex items-center gap-1"
+                    title={translations.addScene}
+                  >
+                    <Plus className="w-3 h-3" />
+                    {translations.addScene}
+                  </button>
+                )}
+              </div>
+            )}
             <p className="text-slate-200 leading-relaxed">
               {item.role.split(', ').map(role => (
                 <CharacterContextItem key={role} role={role} />

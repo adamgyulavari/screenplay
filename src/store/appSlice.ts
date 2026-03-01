@@ -6,6 +6,7 @@ import {
 } from '../types/screenplay';
 import { splitLongText } from '../utils/screenplay';
 import type { NoteClient } from '../lib/screenplayNotes';
+import type { SceneClient } from '../lib/screenplayScenes';
 
 interface AppState {
   screenplayId: string | null;
@@ -15,6 +16,7 @@ interface AppState {
   selectedCharacter: Character | null;
   screenplay: DialogueItem[];
   notes: NoteClient[];
+  scenes: SceneClient[];
   currentDialogueIndex: number | null;
   currentSegmentIndex: number;
   segments: string[];
@@ -33,6 +35,7 @@ const initialState: AppState = {
   selectedCharacter: null,
   screenplay: [],
   notes: [],
+  scenes: [],
   currentDialogueIndex: 0,
   currentSegmentIndex: 0,
   segments: [],
@@ -143,6 +146,7 @@ const appSlice = createSlice({
       state.selectedCharacter = null;
       state.screenplay = [];
       state.notes = [];
+      state.scenes = [];
       state.currentDialogueIndex = 0;
       state.currentSegmentIndex = 0;
       state.segments = [];
@@ -218,6 +222,22 @@ const appSlice = createSlice({
     removeNote: (state, action: PayloadAction<string>) => {
       state.notes = state.notes.filter(n => n.id !== action.payload);
     },
+    setScenes: (state, action: PayloadAction<SceneClient[]>) => {
+      state.scenes = action.payload;
+    },
+    addScene: (state, action: PayloadAction<SceneClient>) => {
+      state.scenes.push(action.payload);
+    },
+    updateScene: (
+      state,
+      action: PayloadAction<{ id: string; title: string }>
+    ) => {
+      const s = state.scenes.find(scene => scene.id === action.payload.id);
+      if (s) s.title = action.payload.title;
+    },
+    removeScene: (state, action: PayloadAction<string>) => {
+      state.scenes = state.scenes.filter(s => s.id !== action.payload);
+    },
     logout: state => {
       state.isAuthenticated = false;
       state.availableScreenplays = [];
@@ -225,6 +245,7 @@ const appSlice = createSlice({
       state.isOwner = false;
       state.notesViewOpen = false;
       state.notes = [];
+      state.scenes = [];
       state.selectedCharacter = null;
       state.currentDialogueIndex = null;
       state.currentSegmentIndex = 0;
@@ -249,6 +270,10 @@ export const {
   addNote,
   updateNote,
   removeNote,
+  setScenes,
+  addScene,
+  updateScene,
+  removeScene,
   setTTS,
   toggleTTS,
   login,

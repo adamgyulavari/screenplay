@@ -7,6 +7,7 @@ import { useAppSelector } from './store/hooks';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { usePersistProgress } from './hooks/usePersistProgress';
 import { useScreenplayNotes } from './hooks/useScreenplayNotes';
+import { useScreenplayScenes } from './hooks/useScreenplayScenes';
 import { translations } from './utils/translations';
 import type { RootState } from './store';
 
@@ -16,6 +17,7 @@ function App() {
   const { isAuthenticated, selectedCharacter, notesViewOpen, screenplayId } =
     useAppSelector((state: RootState) => state.app);
   useScreenplayNotes(screenplayId);
+  useScreenplayScenes(screenplayId);
 
   if (authLoading) {
     return (

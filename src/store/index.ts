@@ -9,6 +9,7 @@ const persistConfig = {
   blacklist: [
     'screenplay',
     'characters',
+    'scenes',
     'apiKey',
     'screenplayId',
     'isOwner',

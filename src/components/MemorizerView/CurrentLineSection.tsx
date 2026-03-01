@@ -20,7 +20,13 @@ export const CurrentLineSection = () => {
   );
   const screenplay = useAppSelector(state => state.app.screenplay);
   const notes = useAppSelector(state => state.app.notes);
+  const scenes = useAppSelector(state => state.app.scenes);
   const dispatch = useAppDispatch();
+
+  const sceneAtCurrent =
+    currentDialogueIndex != null
+      ? scenes.find(s => s.dialogueIndex === currentDialogueIndex)
+      : null;
 
   const lineText =
     currentDialogueIndex != null && screenplay[currentDialogueIndex]
@@ -87,6 +93,13 @@ export const CurrentLineSection = () => {
         >
           {showLine ? (
             <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {sceneAtCurrent && (
+                <div className="mb-3">
+                  <span className="text-xs font-medium text-amber-400/90">
+                    {sceneAtCurrent.title}
+                  </span>
+                </div>
+              )}
               {currentTextSegments.length > 1 && (
                 <div className="text-center mb-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-700/50 rounded-full text-slate-300 text-sm">
@@ -147,6 +160,13 @@ export const CurrentLineSection = () => {
         <div className="min-h-[150px] flex items-center justify-center mb-6">
           {showLine ? (
             <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {sceneAtCurrent && (
+                <div className="mb-2">
+                  <span className="text-xs font-medium text-amber-400/90">
+                    {sceneAtCurrent.title}
+                  </span>
+                </div>
+              )}
               {currentTextSegments.length > 1 && (
                 <div className="text-center mb-3">
                   <div className="inline-flex items-center gap-2 px-2 py-1 bg-slate-700/50 rounded-full text-slate-300 text-xs">

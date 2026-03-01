@@ -12,6 +12,7 @@ export const ContextSection = ({
 }) => {
   const screenplay = useAppSelector(state => state.app.screenplay);
   const notes = useAppSelector(state => state.app.notes);
+  const scenes = useAppSelector(state => state.app.scenes);
   const ttsEnabled = useAppSelector(state => state.app.ttsEnabled);
   const apiKey = useAppSelector(state => state.app.apiKey);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -138,17 +139,29 @@ export const ContextSection = ({
           const isCurrentItem =
             contextIndexes[idx] === currentDialogueIndex - 1;
           const actualDialogueIndex = contextIndexes[idx];
+          const sceneAtDialogue = scenes.find(
+            s => s.dialogueIndex === actualDialogueIndex
+          );
+
+          const borderClass = isCurrentItem
+            ? 'border-blue-400 bg-blue-900/30 opacity-100'
+            : sceneAtDialogue
+              ? 'border-amber-500/60 bg-slate-800/30 opacity-70'
+              : 'border-slate-600/50 bg-slate-800/30 opacity-70';
 
           return (
             <div
               key={contextItem.role + actualDialogueIndex}
               data-dialogue-index={actualDialogueIndex}
-              className={`p-4 rounded-xl border transition-all duration-200 ${
-                isCurrentItem
-                  ? 'border-blue-400 bg-blue-900/30 opacity-100'
-                  : 'border-slate-600/50 bg-slate-800/30 opacity-70'
-              }`}
+              className={`p-4 rounded-xl border transition-all duration-200 ${borderClass}`}
             >
+              {sceneAtDialogue && (
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-xs font-medium text-amber-400/90">
+                    {sceneAtDialogue.title}
+                  </span>
+                </div>
+              )}
               <p className="text-slate-200 leading-relaxed">
                 {contextItem.role.split(', ').map(role => (
                   <CharacterContextItem key={role} role={role} />

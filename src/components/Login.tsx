@@ -12,10 +12,22 @@ export function Login() {
     setError('');
 
     try {
+      const redirectTo =
+        (import.meta.env.VITE_DEV_REDIRECT_URL as string | undefined) ||
+        `${window.location.origin}/`;
+
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[Auth] redirectTo:',
+          redirectTo,
+          '— If login sends you to production, add this exact URL to Supabase: Authentication → URL Configuration → Redirect URLs'
+        );
+      }
+
       const { error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo,
         },
       });
 

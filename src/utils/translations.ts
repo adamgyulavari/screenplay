@@ -67,7 +67,8 @@ export const translations = {
   addUserError: 'Nem sikerült hozzáadni',
   removeUserError: 'Nem sikerült eltávolítani',
   userNotFound: 'Nincs ilyen e-mail címmel regisztrált felhasználó.',
-  invitationSaved: 'Hozzáférés elmentve. A felhasználó a regisztráció után automatikusan megkapja.',
+  invitationSaved:
+    'Hozzáférés elmentve. A felhasználó a regisztráció után automatikusan megkapja.',
   pendingInvitations: 'Függőben lévő meghívók',
   removeInvitation: 'Meghívó visszavonása',
   removeInvitationError: 'Nem sikerült visszavonni a meghívót',
@@ -98,6 +99,15 @@ export const translations = {
   deleteNote: 'Törlés',
   deleteNoteConfirm: 'Biztosan törlöd ezt a jegyzetet?',
   notesOnThisLine: 'Jegyzetek ezen a soron',
+
+  // Scene markers
+  addScene: 'Új jelenet',
+  addSceneButton: 'Jelenet hozzáadása',
+  sceneTitle: 'Jelenet címe',
+  sceneTitlePlaceholder: 'Írd be a jelenet címét...',
+  editScene: 'Jelenet szerkesztése',
+  deleteScene: 'Törlés',
+  deleteSceneConfirm: 'Biztosan törlöd ezt a jelenetet?',
 } as const;
 
 export type TranslationKey = keyof typeof translations;
