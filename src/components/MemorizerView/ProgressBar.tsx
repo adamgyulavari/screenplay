@@ -43,7 +43,7 @@ export const ProgressBar = () => {
   };
 
   return (
-    <div className="p-4 flex-grow">
+    <div className="py-1 md:px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <span className="text-slate-300 text-sm font-medium">

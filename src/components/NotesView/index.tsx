@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setNotesView, addNote, updateNote, removeNote } from '../../store/appSlice';
 import { ScreenplayTextColumn, SelectionInfo, Note } from './ScreenplayTextColumn';
 import { createNote, updateNote as updateNoteApi, deleteNote } from '../../lib/screenplayNotes';
 import { supabase } from '../../lib/supabase';
 import { translations } from '../../utils/translations';
+import { AppHeader } from '../AppHeader';
 
 export function NotesView() {
   const dispatch = useAppDispatch();
@@ -100,20 +100,17 @@ export function NotesView() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      <header className="py-4 px-6 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {translations.notesBackToCharacters}
-          </button>
-          {error && (
-            <p className="text-red-400 text-sm" role="alert">{error}</p>
-          )}
-        </div>
-      </header>
+      <AppHeader
+        back={{ label: translations.notesBackToCharacters, onClick: handleBack }}
+        title={translations.notesViewTitle}
+        center={
+          error ? (
+            <p className="text-red-400 text-sm text-right" role="alert">
+              {error}
+            </p>
+          ) : undefined
+        }
+      />
 
       <div className="flex-1 flex min-h-0 justify-center">
         <div className="w-full max-w-4xl flex flex-col min-h-0 px-6">
