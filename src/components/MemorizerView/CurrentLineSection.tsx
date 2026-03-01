@@ -15,24 +15,31 @@ export const CurrentLineSection = () => {
     state => state.app.currentSegmentIndex
   );
   const showLine = useAppSelector(state => state.app.showLine);
-  const currentDialogueIndex = useAppSelector(state => state.app.currentDialogueIndex);
+  const currentDialogueIndex = useAppSelector(
+    state => state.app.currentDialogueIndex
+  );
   const screenplay = useAppSelector(state => state.app.screenplay);
   const notes = useAppSelector(state => state.app.notes);
   const dispatch = useAppDispatch();
 
-  const lineText = currentDialogueIndex != null && screenplay[currentDialogueIndex]
-    ? screenplay[currentDialogueIndex].text
-    : '';
+  const lineText =
+    currentDialogueIndex != null && screenplay[currentDialogueIndex]
+      ? screenplay[currentDialogueIndex].text
+      : '';
   const revealedEnd = getRevealedEndOffset(
     lineText,
     currentTextSegments,
     showLine ? currentSegmentIndex + 1 : 0
   );
   const revealedText = lineText.slice(0, revealedEnd);
-  const lineNotes = currentDialogueIndex != null
-    ? notes
-        .filter(n => n.dialogueIndex === currentDialogueIndex && n.endIndex <= revealedEnd)
-    : [];
+  const lineNotes =
+    currentDialogueIndex != null
+      ? notes.filter(
+          n =>
+            n.dialogueIndex === currentDialogueIndex &&
+            n.endIndex <= revealedEnd
+        )
+      : [];
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);

@@ -6,7 +6,11 @@ import { useScreenplayItem } from '../hooks/useScreenplayItem';
 import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
-import { deselectScreenplay, setSelectedCharacter, setNotesView } from '../store/appSlice';
+import {
+  deselectScreenplay,
+  setSelectedCharacter,
+  setNotesView,
+} from '../store/appSlice';
 import { ManageUsersPanel } from './ManageUsersPanel';
 import { translations } from '../utils/translations';
 import { analytics } from '../utils/analytics';
@@ -68,7 +72,10 @@ export const CharacterSelector = () => {
   };
 
   const backAction = hasMultipleScreenplays
-    ? { label: translations.backToScreenplays, onClick: () => dispatch(deselectScreenplay()) }
+    ? {
+        label: translations.backToScreenplays,
+        onClick: () => dispatch(deselectScreenplay()),
+      }
     : undefined;
 
   return (

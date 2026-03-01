@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Character, DialogueItem, ScreenplaySummary } from '../types/screenplay';
+import {
+  Character,
+  DialogueItem,
+  ScreenplaySummary,
+} from '../types/screenplay';
 import { splitLongText } from '../utils/screenplay';
 import type { NoteClient } from '../lib/screenplayNotes';
 
@@ -196,11 +200,19 @@ const appSlice = createSlice({
     addNote: (state, action: PayloadAction<NoteClient>) => {
       state.notes.push(action.payload);
     },
-    updateNote: (state, action: PayloadAction<{ id: string; noteContent: string; updatedAt?: string }>) => {
+    updateNote: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        noteContent: string;
+        updatedAt?: string;
+      }>
+    ) => {
       const n = state.notes.find(note => note.id === action.payload.id);
       if (n) {
         n.noteContent = action.payload.noteContent;
-        if (action.payload.updatedAt != null) n.updatedAt = action.payload.updatedAt;
+        if (action.payload.updatedAt != null)
+          n.updatedAt = action.payload.updatedAt;
       }
     },
     removeNote: (state, action: PayloadAction<string>) => {

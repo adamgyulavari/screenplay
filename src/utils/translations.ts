@@ -70,7 +70,8 @@ export const translations = {
 
   // Screenplay selector
   screenplaySelector: 'Szövegkönyvek',
-  noScreenplays: 'Még nincs hozzáférésed egyetlen szövegkönyvhöz sem. Kérj Ádámtól!',
+  noScreenplays:
+    'Még nincs hozzáférésed egyetlen szövegkönyvhöz sem. Kérj Ádámtól!',
   backToScreenplays: 'Szövegkönyvek',
   screenplayAuthor: 'Szerző',
   screenplayRole: 'Szereped',
@@ -82,7 +83,8 @@ export const translations = {
   notesBackToCharacters: 'Vissza a szereplőkhöz',
   addNote: 'Jegyzet hozzáadása',
   notePlaceholder: 'Írd be a jegyzetet...',
-  noNotes: 'Nincs jegyzet. Jelölj ki szöveget a bal oldalon, majd kattints a „Jegyzet hozzáadása” gombra.',
+  noNotes:
+    'Nincs jegyzet. Jelölj ki szöveget a bal oldalon, majd kattints a „Jegyzet hozzáadása” gombra.',
   cancel: 'Mégse',
   save: 'Mentés',
   saving: 'Mentés…',

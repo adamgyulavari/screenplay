@@ -89,7 +89,9 @@ export const ScreenplaySelector = () => {
                           <BookOpen className="w-8 h-8 text-white" />
                         </div>
                         <h3 className="text-2xl font-bold text-white group-hover:text-white/90 transition-colors">
-                          {isLoading ? translations.loadingScreenplay : sp.title}
+                          {isLoading
+                            ? translations.loadingScreenplay
+                            : sp.title}
                         </h3>
                       </div>
 

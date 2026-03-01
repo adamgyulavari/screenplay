@@ -1,8 +1,21 @@
 import { useState, useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { setNotesView, addNote, updateNote, removeNote } from '../../store/appSlice';
-import { ScreenplayTextColumn, SelectionInfo, Note } from './ScreenplayTextColumn';
-import { createNote, updateNote as updateNoteApi, deleteNote } from '../../lib/screenplayNotes';
+import {
+  setNotesView,
+  addNote,
+  updateNote,
+  removeNote,
+} from '../../store/appSlice';
+import {
+  ScreenplayTextColumn,
+  SelectionInfo,
+  Note,
+} from './ScreenplayTextColumn';
+import {
+  createNote,
+  updateNote as updateNoteApi,
+  deleteNote,
+} from '../../lib/screenplayNotes';
 import { supabase } from '../../lib/supabase';
 import { translations } from '../../utils/translations';
 import { AppHeader } from '../AppHeader';
@@ -13,7 +26,9 @@ export function NotesView() {
   const screenplayId = useAppSelector(state => state.app.screenplayId);
   const notes = useAppSelector(state => state.app.notes);
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
-  const [highlightedNoteId, setHighlightedNoteId] = useState<string | null>(null);
+  const [highlightedNoteId, setHighlightedNoteId] = useState<string | null>(
+    null
+  );
   const [addNoteContent, setAddNoteContent] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
@@ -25,7 +40,9 @@ export function NotesView() {
     setSaving(true);
     setError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const created = await createNote(
         screenplayId,
         {
@@ -53,7 +70,13 @@ export function NotesView() {
     setError(null);
     try {
       const updated = await updateNoteApi(editingNoteId, editingContent.trim());
-      dispatch(updateNote({ id: updated.id, noteContent: updated.noteContent, updatedAt: updated.updatedAt }));
+      dispatch(
+        updateNote({
+          id: updated.id,
+          noteContent: updated.noteContent,
+          updatedAt: updated.updatedAt,
+        })
+      );
       setEditingNoteId(null);
       setEditingContent('');
     } catch (e) {
@@ -63,24 +86,27 @@ export function NotesView() {
     }
   }, [editingNoteId, editingContent, dispatch]);
 
-  const handleDeleteNote = useCallback(async (id: string) => {
-    if (!window.confirm(translations.deleteNoteConfirm)) return;
-    setSaving(true);
-    setError(null);
-    try {
-      await deleteNote(id);
-      dispatch(removeNote(id));
-      if (highlightedNoteId === id) setHighlightedNoteId(null);
-      if (editingNoteId === id) {
-        setEditingNoteId(null);
-        setEditingContent('');
+  const handleDeleteNote = useCallback(
+    async (id: string) => {
+      if (!window.confirm(translations.deleteNoteConfirm)) return;
+      setSaving(true);
+      setError(null);
+      try {
+        await deleteNote(id);
+        dispatch(removeNote(id));
+        if (highlightedNoteId === id) setHighlightedNoteId(null);
+        if (editingNoteId === id) {
+          setEditingNoteId(null);
+          setEditingContent('');
+        }
+      } catch (e) {
+        setError((e as Error)?.message ?? 'Failed to delete note');
+      } finally {
+        setSaving(false);
       }
-    } catch (e) {
-      setError((e as Error)?.message ?? 'Failed to delete note');
-    } finally {
-      setSaving(false);
-    }
-  }, [dispatch, highlightedNoteId, editingNoteId]);
+    },
+    [dispatch, highlightedNoteId, editingNoteId]
+  );
 
   const handleCancelAddNote = useCallback(() => {
     setSelection(null);
@@ -101,7 +127,10 @@ export function NotesView() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
       <AppHeader
-        back={{ label: translations.notesBackToCharacters, onClick: handleBack }}
+        back={{
+          label: translations.notesBackToCharacters,
+          onClick: handleBack,
+        }}
         title={translations.notesViewTitle}
         center={
           error ? (
@@ -119,7 +148,15 @@ export function NotesView() {
             notes={notes}
             highlightedNoteId={highlightedNoteId}
             onHighlightNote={setHighlightedNoteId}
-            currentSelection={selection ? { dialogueIndex: selection.dialogueIndex, startIndex: selection.startIndex, endIndex: selection.endIndex } : null}
+            currentSelection={
+              selection
+                ? {
+                    dialogueIndex: selection.dialogueIndex,
+                    startIndex: selection.startIndex,
+                    endIndex: selection.endIndex,
+                  }
+                : null
+            }
             onEditNote={startEditing}
             onDeleteNote={handleDeleteNote}
           />

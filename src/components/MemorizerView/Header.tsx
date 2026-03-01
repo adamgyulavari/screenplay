@@ -1,17 +1,7 @@
 import React from 'react';
-import {
-  RotateCcw,
-  User,
-  Volume2,
-  VolumeX,
-  Users,
-} from 'lucide-react';
+import { RotateCcw, User, Volume2, VolumeX, Users } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import {
-  clearSelectedCharacter,
-  jump,
-  toggleTTS,
-} from '../../store/appSlice';
+import { clearSelectedCharacter, jump, toggleTTS } from '../../store/appSlice';
 import { ProgressBar } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';

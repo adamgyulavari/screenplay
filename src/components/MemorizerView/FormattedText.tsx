@@ -6,21 +6,27 @@ interface FormattedTextProps {
   sourceStart?: number;
 }
 
-export const FormattedText: React.FC<FormattedTextProps> = ({ text, sourceStart = undefined }) => {
+export const FormattedText: React.FC<FormattedTextProps> = ({
+  text,
+  sourceStart = undefined,
+}) => {
   const parts = text.split(/(\*[^*]+\*)/g);
   let currentStart = sourceStart ?? 0;
 
   return (
     <>
       {parts.map((part, index) => {
-        const segmentStart = sourceStart !== undefined ? currentStart : undefined;
+        const segmentStart =
+          sourceStart !== undefined ? currentStart : undefined;
         if (part.startsWith('*') && part.endsWith('*')) {
           const italicText = part.slice(1, -1);
           const el = (
             <em
               key={index}
               className="text-slate-400 font-normal select-none"
-              {...(segmentStart !== undefined ? { 'data-source-start': segmentStart } : {})}
+              {...(segmentStart !== undefined
+                ? { 'data-source-start': segmentStart }
+                : {})}
             >
               {italicText}
             </em>
@@ -31,7 +37,9 @@ export const FormattedText: React.FC<FormattedTextProps> = ({ text, sourceStart 
         const el = (
           <span
             key={index}
-            {...(segmentStart !== undefined ? { 'data-source-start': segmentStart } : {})}
+            {...(segmentStart !== undefined
+              ? { 'data-source-start': segmentStart }
+              : {})}
           >
             {part}
           </span>

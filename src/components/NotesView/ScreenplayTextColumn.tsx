@@ -29,7 +29,11 @@ interface ScreenplayTextColumnProps {
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
   /** When the add-note popover is open, show this selection as highlighted (browser selection is lost on focus) */
-  currentSelection: { dialogueIndex: number; startIndex: number; endIndex: number } | null;
+  currentSelection: {
+    dialogueIndex: number;
+    startIndex: number;
+    endIndex: number;
+  } | null;
   /** When set, notes show edit/delete controls (e.g. in NotesView). Omit in MemorizerView for read-only. */
   onEditNote?: (note: Note) => void;
   onDeleteNote?: (id: string) => void;
@@ -104,7 +108,10 @@ export function ScreenplayTextColumn({
       }
 
       function sourceIndexFromNode(node: Node, offset: number): number | null {
-        const el = node.nodeType === Node.TEXT_NODE ? (node.parentElement as HTMLElement) : (node as HTMLElement);
+        const el =
+          node.nodeType === Node.TEXT_NODE
+            ? (node.parentElement as HTMLElement)
+            : (node as HTMLElement);
         let cur: HTMLElement | null = el;
         while (cur && cur !== containerRef.current) {
           const startAttr = cur.getAttribute?.('data-source-start');
@@ -118,7 +125,10 @@ export function ScreenplayTextColumn({
         return null;
       }
 
-      const anchorSource = sourceIndexFromNode(sel.anchorNode!, sel.anchorOffset);
+      const anchorSource = sourceIndexFromNode(
+        sel.anchorNode!,
+        sel.anchorOffset
+      );
       const focusSource = sourceIndexFromNode(sel.focusNode!, sel.focusOffset);
       if (anchorSource == null || focusSource == null) {
         onSelection(null);
@@ -178,17 +188,22 @@ export function ScreenplayTextColumn({
                 <CharacterContextItem key={role} role={role} />
               ))}
               <span data-dialogue-text>
-              <InlineAnnotatedText
-                text={item.text}
-                notes={notesForDialogue}
-                highlightedNoteId={highlightedNoteId}
-                onHighlightNote={onHighlightNote}
-                currentSelection={
-                  isCurrentSelection ? { startIndex: currentSelection.startIndex, endIndex: currentSelection.endIndex } : null
-                }
-                onEditNote={onEditNote}
-                onDeleteNote={onDeleteNote}
-              />
+                <InlineAnnotatedText
+                  text={item.text}
+                  notes={notesForDialogue}
+                  highlightedNoteId={highlightedNoteId}
+                  onHighlightNote={onHighlightNote}
+                  currentSelection={
+                    isCurrentSelection
+                      ? {
+                          startIndex: currentSelection.startIndex,
+                          endIndex: currentSelection.endIndex,
+                        }
+                      : null
+                  }
+                  onEditNote={onEditNote}
+                  onDeleteNote={onDeleteNote}
+                />
               </span>
             </p>
           </div>
@@ -347,9 +362,7 @@ function NoteSegment({
         )}
       </div>
       <span
-        className={`rounded px-0.5 ${
-          isHighlighted ? 'bg-amber-500/40' : ''
-        }`}
+        className={`rounded px-0.5 ${isHighlighted ? 'bg-amber-500/40' : ''}`}
       >
         <FormattedText text={segText} />
       </span>
@@ -381,7 +394,13 @@ export function InlineAnnotatedText({
     <>
       {segments.map((seg, i) => {
         if (seg.type === 'text') {
-          return <FormattedText key={i} text={seg.content} sourceStart={seg.sourceStart} />;
+          return (
+            <FormattedText
+              key={i}
+              text={seg.content}
+              sourceStart={seg.sourceStart}
+            />
+          );
         }
         if (seg.type === 'selection') {
           return (
