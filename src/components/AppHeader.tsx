@@ -27,7 +27,7 @@ export function AppHeader({ back, title, center, actions }: AppHeaderProps) {
   };
 
   return (
-    <header className="py-3 px-4 md:px-6 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
+    <header className="sticky top-0 z-40 py-3 px-4 md:px-6 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
       <div className="flex items-center gap-3">
         {back && (
           <button onClick={back.onClick} className={headerBtnClass}>
