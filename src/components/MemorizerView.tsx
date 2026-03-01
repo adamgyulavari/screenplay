@@ -40,7 +40,7 @@ export const MemorizerView = () => {
       <Header
         onManageUsers={isOwner ? () => setManageUsersOpen(true) : undefined}
       />
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-4xl mx-auto px-6 [container-type:inline-size]">
         <ContextSection currentDialogueIndex={currentDialogueIndex} />
 
         <CurrentLineSection />

@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { User, LogOut, Users, FileText } from 'lucide-react';
+import { User, LogOut, Users, FileText, ArrowLeft } from 'lucide-react';
 import { Character } from '../types/screenplay';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { useScreenplayItem } from '../hooks/useScreenplayItem';
 import { useTextSegments } from '../hooks/useScreenplayItem';
 import { FormattedText } from './MemorizerView/FormattedText';
 import { getColorClasses } from '../utils/colors';
-import { logout, setSelectedCharacter, setNotesView } from '../store/appSlice';
+import { deselectScreenplay, logout, setSelectedCharacter, setNotesView } from '../store/appSlice';
 import { ManageUsersPanel } from './ManageUsersPanel';
 import { supabase } from '../lib/supabase';
 import { translations } from '../utils/translations';
@@ -39,6 +39,9 @@ export const CharacterSelector = () => {
   const dispatch = useAppDispatch();
   const characters = useAppSelector(state => state.app.characters);
   const isOwner = useAppSelector(state => state.app.isOwner);
+  const hasMultipleScreenplays = useAppSelector(
+    state => state.app.availableScreenplays.length > 1
+  );
   const [manageUsersOpen, setManageUsersOpen] = useState(false);
 
   const handleSelectCharacter = (character: Character) => {
@@ -55,6 +58,15 @@ export const CharacterSelector = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         <div className="mb-4 flex justify-center items-center align-middle gap-4">
+          {hasMultipleScreenplays && (
+            <button
+              onClick={() => dispatch(deselectScreenplay())}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {translations.backToScreenplays}
+            </button>
+          )}
           <h1 className="text-5xl font-bold text-white tracking-tight flex-1">
             {translations.title}
           </h1>

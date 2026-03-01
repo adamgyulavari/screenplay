@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { supabase } from '../lib/supabase';
-import { login, logout } from '../store/appSlice';
+import { login, logout, setAuthenticated } from '../store/appSlice';
 import { processScreenplayData } from '../utils/screenplay';
-import { DEFAULT_SCREENPLAY_CONTENT } from '../data/defaultScreenplay';
-import type { DialogueItem } from '../types/screenplay';
+import type { DialogueItem, ScreenplaySummary } from '../types/screenplay';
 
-async function loadScreenplayAndLogin(
+async function loadAvailableScreenplays(
   userId: string,
   dispatch: ReturnType<typeof useDispatch>
 ) {
@@ -16,11 +15,8 @@ async function loadScreenplayAndLogin(
       `
       screenplay_id,
       character_role,
-      current_dialogue_index,
-      current_segment_index,
       screenplays (
         id,
-        content,
         title,
         author,
         owner_id
@@ -32,45 +28,63 @@ async function loadScreenplayAndLogin(
 
   if (error) throw error;
 
-  let screenplayId: string;
-  let isOwner = false;
-  let content: { role: string; text: string }[];
-  let characterRole: string | null = null;
-  let currentDialogueIndex = 0;
-  let currentSegmentIndex = 0;
-
-  if (!accessRows || accessRows.length === 0) {
-    const { data: inserted, error: insertError } = await supabase
-      .from('screenplays')
-      .insert({
-        owner_id: userId,
-        title: 'My screenplay',
-        content: [...DEFAULT_SCREENPLAY_CONTENT],
-      })
-      .select('id, content')
-      .single();
-
-    if (insertError) throw insertError;
-    screenplayId = inserted!.id;
-    isOwner = true;
-    content = (inserted!.content as { role: string; text: string }[]) ?? [
-      ...DEFAULT_SCREENPLAY_CONTENT,
-    ];
-  } else {
-    const first = accessRows[0];
-    const sp = first.screenplays as unknown as {
+  const summaries: ScreenplaySummary[] = (accessRows ?? []).map(row => {
+    const sp = row.screenplays as unknown as {
       id: string;
-      content: { role: string; text: string }[];
+      title: string;
+      author: string | null;
       owner_id: string;
     };
-    screenplayId = sp.id;
-    isOwner = sp.owner_id === userId;
-    content = sp.content ?? [];
-    characterRole = first.character_role ?? null;
-    currentDialogueIndex = first.current_dialogue_index ?? 0;
-    currentSegmentIndex = first.current_segment_index ?? 0;
-  }
+    return {
+      id: sp.id,
+      title: sp.title,
+      author: sp.author,
+      characterRole: row.character_role ?? null,
+      isOwner: sp.owner_id === userId,
+    };
+  });
 
+  if (summaries.length === 1) {
+    await loadAndSelectScreenplay(summaries[0].id, userId, summaries, dispatch);
+  } else {
+    dispatch(setAuthenticated({ availableScreenplays: summaries }));
+  }
+}
+
+export async function loadAndSelectScreenplay(
+  screenplayId: string,
+  userId: string,
+  availableScreenplays: ScreenplaySummary[],
+  dispatch: ReturnType<typeof useDispatch>
+) {
+  const { data: accessRow, error } = await supabase
+    .from('screenplay_access')
+    .select(
+      `
+      screenplay_id,
+      character_role,
+      current_dialogue_index,
+      current_segment_index,
+      screenplays (
+        id,
+        content,
+        owner_id
+      )
+    `
+    )
+    .eq('user_id', userId)
+    .eq('screenplay_id', screenplayId)
+    .single();
+
+  if (error) throw error;
+
+  const sp = accessRow.screenplays as unknown as {
+    id: string;
+    content: { role: string; text: string }[];
+    owner_id: string;
+  };
+
+  const content = sp.content ?? [];
   const indexedScreenplay: DialogueItem[] = content.map((item, index) => ({
     ...item,
     index,
@@ -79,14 +93,15 @@ async function loadScreenplayAndLogin(
 
   dispatch(
     login({
-      screenplayId,
-      isOwner,
+      availableScreenplays,
+      screenplayId: sp.id,
+      isOwner: sp.owner_id === userId,
       apiKey: null,
       characters,
       screenplay: indexedScreenplay,
-      characterRole,
-      currentDialogueIndex,
-      currentSegmentIndex,
+      characterRole: accessRow.character_role ?? null,
+      currentDialogueIndex: accessRow.current_dialogue_index ?? 0,
+      currentSegmentIndex: accessRow.current_segment_index ?? 0,
     })
   );
 }
@@ -106,7 +121,7 @@ export function useSupabaseAuth() {
         setLoading(false);
         return;
       }
-      loadScreenplayAndLogin(session.user.id, dispatch)
+      loadAvailableScreenplays(session.user.id, dispatch)
         .then(() => {
           if (mounted) setLoading(false);
         })
@@ -126,7 +141,7 @@ export function useSupabaseAuth() {
         dispatch(logout());
         return;
       }
-      loadScreenplayAndLogin(session.user.id, dispatch).catch(e => {
+      loadAvailableScreenplays(session.user.id, dispatch).catch(e => {
         if (mounted) setError(e?.message ?? 'Failed to load screenplay');
       });
     });

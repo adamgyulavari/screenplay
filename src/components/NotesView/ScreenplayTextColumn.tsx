@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { FormattedText } from '../MemorizerView/FormattedText';
@@ -171,7 +171,7 @@ export function ScreenplayTextColumn({
           <div
             key={`${item.role}-${index}`}
             data-dialogue-index={index}
-            className="min-h-[4rem] p-4 rounded-xl border border-slate-600/50 bg-slate-800/30 transition-colors"
+            className="min-h-[4rem] p-4 rounded-xl border border-slate-600/50 bg-slate-800/30 transition-colors [container-type:inline-size]"
           >
             <p className="text-slate-200 leading-relaxed">
               {item.role.split(', ').map(role => (
@@ -261,6 +261,102 @@ function buildSegments(
   return segments;
 }
 
+/** Single note + snippet: measures note height and reserves that space so snippet never overlaps. */
+function NoteSegment({
+  note,
+  segText,
+  isHighlighted,
+  canEdit,
+  canDelete,
+  onHighlightNote,
+  onEditNote,
+  onDeleteNote,
+}: {
+  note: Note;
+  segText: string;
+  isHighlighted: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  onHighlightNote: (id: string | null) => void;
+  onEditNote?: (note: Note) => void;
+  onDeleteNote?: (id: string) => void;
+}) {
+  const noteRef = useRef<HTMLDivElement>(null);
+  const [paddingTop, setPaddingTop] = useState(20); // 1.25rem fallback for first paint
+
+  useEffect(() => {
+    const el = noteRef.current;
+    if (!el) return;
+    const sync = () => setPaddingTop(el.offsetHeight + 4); // +4 for a small gap
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [note.noteContent]);
+
+  return (
+    <span
+      className="relative inline-block align-baseline overflow-visible"
+      style={{ paddingTop: `${paddingTop}px` }}
+    >
+      <div
+        ref={noteRef}
+        className="absolute left-0 top-0 z-10 flex w-max max-w-[min(36rem,100cqw)] items-start gap-0.5 text-left"
+      >
+        <button
+          type="button"
+          onClick={e => {
+            e.stopPropagation();
+            onHighlightNote(isHighlighted ? null : note.id);
+          }}
+          className={`min-w-0 flex-1 rounded px-1.5 py-0.5 text-left text-xs transition-colors whitespace-normal ${
+            isHighlighted
+              ? 'bg-amber-500/40 text-amber-200'
+              : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50'
+          }`}
+        >
+          {note.noteContent}
+        </button>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation();
+              onEditNote?.(note);
+            }}
+            className="shrink-0 p-0.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-600/50 transition-colors"
+            title={translations.editNote}
+            aria-label={translations.editNote}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        )}
+        {canDelete && (
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation();
+              onDeleteNote?.(note.id);
+            }}
+            className="shrink-0 p-0.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600/50 transition-colors"
+            title={translations.deleteNote}
+            aria-label={translations.deleteNote}
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+      <span
+        className={`rounded px-0.5 ${
+          isHighlighted ? 'bg-amber-500/40' : ''
+        }`}
+      >
+        <FormattedText text={segText} />
+      </span>
+    </span>
+  );
+}
+
 /** Renders text with inline notes (note chip above snippet). Export for use in MemorizerView read-only. */
 export function InlineAnnotatedText({
   text,
@@ -302,62 +398,17 @@ export function InlineAnnotatedText({
         const canEdit = Boolean(onEditNote);
         const canDelete = Boolean(onDeleteNote);
         return (
-          <span
+          <NoteSegment
             key={note.id}
-            className="relative inline-block align-baseline pt-5"
-          >
-            <div className="absolute left-0 top-0 flex items-center gap-0.5 text-left">
-              <button
-                type="button"
-                onClick={e => {
-                  e.stopPropagation();
-                  onHighlightNote(isHighlighted ? null : note.id);
-                }}
-                className={`rounded px-1.5 py-0.5 text-xs transition-colors ${
-                  isHighlighted
-                    ? 'bg-amber-500/40 text-amber-200'
-                    : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50'
-                }`}
-              >
-                {note.noteContent}
-              </button>
-              {canEdit && (
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onEditNote?.(note);
-                  }}
-                  className="p-0.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-600/50 transition-colors"
-                  title={translations.editNote}
-                  aria-label={translations.editNote}
-                >
-                  <Pencil className="w-3 h-3" />
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onDeleteNote?.(note.id);
-                  }}
-                  className="p-0.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600/50 transition-colors"
-                  title={translations.deleteNote}
-                  aria-label={translations.deleteNote}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-            <span
-              className={`rounded px-0.5 ${
-                isHighlighted ? 'bg-amber-500/40' : ''
-              }`}
-            >
-              <FormattedText text={segText} />
-            </span>
-          </span>
+            note={note}
+            segText={segText}
+            isHighlighted={isHighlighted}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            onHighlightNote={onHighlightNote}
+            onEditNote={onEditNote}
+            onDeleteNote={onDeleteNote}
+          />
         );
       })}
     </>

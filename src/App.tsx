@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
 import { CharacterSelector } from './components/CharacterSelector';
 import { MemorizerView } from './components/MemorizerView';
 import { NotesView } from './components/NotesView';
+import { ScreenplaySelector } from './components/ScreenplaySelector';
 import { Login } from './components/Login';
-import { useAppSelector, useAppDispatch } from './store/hooks';
-import { logout } from './store/appSlice';
+import { useAppSelector } from './store/hooks';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { usePersistProgress } from './hooks/usePersistProgress';
 import { useScreenplayNotes } from './hooks/useScreenplayNotes';
@@ -12,18 +11,11 @@ import { translations } from './utils/translations';
 import type { RootState } from './store';
 
 function App() {
-  const dispatch = useAppDispatch();
   const { loading: authLoading, error: authError } = useSupabaseAuth();
   usePersistProgress();
-  const { characters, isAuthenticated, screenplay, selectedCharacter, notesViewOpen, screenplayId } =
+  const { isAuthenticated, selectedCharacter, notesViewOpen, screenplayId } =
     useAppSelector((state: RootState) => state.app);
   useScreenplayNotes(screenplayId);
-
-  useEffect(() => {
-    if (isAuthenticated && (!characters.length || !screenplay.length)) {
-      dispatch(logout());
-    }
-  }, [isAuthenticated, characters.length, screenplay.length, dispatch]);
 
   if (authLoading) {
     return (
@@ -45,6 +37,10 @@ function App() {
 
   if (!isAuthenticated) {
     return <Login />;
+  }
+
+  if (!screenplayId) {
+    return <ScreenplaySelector />;
   }
 
   if (notesViewOpen) {

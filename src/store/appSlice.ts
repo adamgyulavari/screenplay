@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Character, DialogueItem } from '../types/screenplay';
+import { Character, DialogueItem, ScreenplaySummary } from '../types/screenplay';
 import { splitLongText } from '../utils/screenplay';
 import type { NoteClient } from '../lib/screenplayNotes';
 
@@ -16,6 +16,7 @@ interface AppState {
   segments: string[];
   showLine: boolean;
   isAuthenticated: boolean;
+  availableScreenplays: ScreenplaySummary[];
   ttsEnabled: boolean;
   apiKey: string | null;
 }
@@ -33,6 +34,7 @@ const initialState: AppState = {
   segments: [],
   showLine: false,
   isAuthenticated: false,
+  availableScreenplays: [],
   ttsEnabled: false,
   apiKey: null,
 };
@@ -122,9 +124,31 @@ const appSlice = createSlice({
     toggleTTS: state => {
       state.ttsEnabled = !state.ttsEnabled;
     },
+    setAuthenticated: (
+      state,
+      action: PayloadAction<{ availableScreenplays: ScreenplaySummary[] }>
+    ) => {
+      state.isAuthenticated = true;
+      state.availableScreenplays = action.payload.availableScreenplays;
+    },
+    deselectScreenplay: state => {
+      state.screenplayId = null;
+      state.isOwner = false;
+      state.notesViewOpen = false;
+      state.characters = [];
+      state.selectedCharacter = null;
+      state.screenplay = [];
+      state.notes = [];
+      state.currentDialogueIndex = 0;
+      state.currentSegmentIndex = 0;
+      state.segments = [];
+      state.showLine = false;
+      state.apiKey = null;
+    },
     login: (
       state,
       action: PayloadAction<{
+        availableScreenplays: ScreenplaySummary[];
         screenplayId: string;
         isOwner: boolean;
         apiKey: string | null;
@@ -136,6 +160,7 @@ const appSlice = createSlice({
       }>
     ) => {
       state.isAuthenticated = true;
+      state.availableScreenplays = action.payload.availableScreenplays;
       state.screenplayId = action.payload.screenplayId;
       state.isOwner = action.payload.isOwner;
       state.apiKey = action.payload.apiKey;
@@ -183,6 +208,7 @@ const appSlice = createSlice({
     },
     logout: state => {
       state.isAuthenticated = false;
+      state.availableScreenplays = [];
       state.screenplayId = null;
       state.isOwner = false;
       state.notesViewOpen = false;
@@ -201,8 +227,10 @@ const appSlice = createSlice({
 export const {
   advance,
   clearSelectedCharacter,
+  deselectScreenplay,
   moveBack,
   jump,
+  setAuthenticated,
   setSelectedCharacter,
   setNotesView,
   setNotes,

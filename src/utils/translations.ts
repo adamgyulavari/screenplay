@@ -67,6 +67,14 @@ export const translations = {
   removeUserError: 'Nem sikerült eltávolítani',
   userNotFound: 'Nincs ilyen e-mail címmel regisztrált felhasználó.',
 
+  // Screenplay selector
+  screenplaySelector: 'Szövegkönyvek',
+  noScreenplays: 'Még nincs hozzáférésed egyetlen szövegkönyvhöz sem. Kérj Ádámtól!',
+  backToScreenplays: 'Szövegkönyvek',
+  screenplayAuthor: 'Szerző',
+  screenplayRole: 'Szereped',
+  loadingScreenplay: 'Betöltés…',
+
   // Notes view
   notes: 'Jegyzetek',
   notesViewTitle: 'Jegyzetek',

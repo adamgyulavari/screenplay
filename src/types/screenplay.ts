@@ -9,3 +9,11 @@ export interface Character {
   color: string;
   dialogues: number[];
 }
+
+export interface ScreenplaySummary {
+  id: string;
+  title: string;
+  author: string | null;
+  characterRole: string | null;
+  isOwner: boolean;
+}
