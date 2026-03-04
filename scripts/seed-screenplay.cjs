@@ -15,7 +15,7 @@ async function main() {
 
   if (!jsonPath || !userEmail) {
     console.error(
-      'Usage: node scripts/seed-screenplay.cjs <path-to-screenplay.json> <user-email>'
+      'Usage: node scripts/seed-screenplay.cjs <path-to-screenplay.json> <user-email> [screenplay-id-to-update]'
     );
     process.exit(1);
   }
@@ -86,23 +86,41 @@ async function main() {
     process.exit(1);
   }
 
-  const { data, error } = await supabase
-    .from('screenplays')
-    .insert({
-      owner_id: user.id,
-      title,
-      author,
-      content,
-    })
-    .select('id, title')
-    .single();
+  const screenplayId = process.argv[4];
 
-  if (error) {
-    console.error('Insert failed:', error.message);
-    process.exit(1);
+  if (screenplayId) {
+    const { data, error } = await supabase
+      .from('screenplays')
+      .update({ title, author, content })
+      .eq('id', screenplayId)
+      .select('id, title')
+      .single();
+
+    if (error) {
+      console.error('Update failed:', error.message);
+      process.exit(1);
+    }
+
+    console.log('Updated screenplay:', data.title, '(id:', data.id, ')');
+  } else {
+    const { data, error } = await supabase
+      .from('screenplays')
+      .insert({
+        owner_id: user.id,
+        title,
+        author,
+        content,
+      })
+      .select('id, title')
+      .single();
+
+    if (error) {
+      console.error('Insert failed:', error.message);
+      process.exit(1);
+    }
+
+    console.log('Seeded screenplay:', data.title, '(id:', data.id, ')');
   }
-
-  console.log('Seeded screenplay:', data.title, '(id:', data.id, ')');
 }
 
 main();
