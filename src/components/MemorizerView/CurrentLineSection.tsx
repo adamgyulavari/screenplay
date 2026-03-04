@@ -23,10 +23,14 @@ export const CurrentLineSection = () => {
   const scenes = useAppSelector(state => state.app.scenes);
   const dispatch = useAppDispatch();
 
-  const sceneAtCurrent =
+  const currentDialogueId =
     currentDialogueIndex != null
-      ? scenes.find(s => s.dialogueIndex === currentDialogueIndex)
+      ? screenplay[currentDialogueIndex]?.id ?? null
       : null;
+
+  const sceneAtCurrent = currentDialogueId
+    ? scenes.find(s => s.dialogueId === currentDialogueId)
+    : null;
 
   const lineText =
     currentDialogueIndex != null && screenplay[currentDialogueIndex]
@@ -38,14 +42,11 @@ export const CurrentLineSection = () => {
     showLine ? currentSegmentIndex + 1 : 0
   );
   const revealedText = lineText.slice(0, revealedEnd);
-  const lineNotes =
-    currentDialogueIndex != null
-      ? notes.filter(
-          n =>
-            n.dialogueIndex === currentDialogueIndex &&
-            n.endIndex <= revealedEnd
-        )
-      : [];
+  const lineNotes = currentDialogueId
+    ? notes.filter(
+        n => n.dialogueId === currentDialogueId && n.endIndex <= revealedEnd
+      )
+    : [];
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);

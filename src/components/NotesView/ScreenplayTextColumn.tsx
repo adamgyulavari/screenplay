@@ -6,6 +6,7 @@ import { CharacterContextItem } from '../MemorizerView/CharacterContextItem';
 import { translations } from '../../utils/translations';
 
 export interface SelectionInfo {
+  dialogueId: string;
   dialogueIndex: number;
   startIndex: number;
   endIndex: number;
@@ -14,7 +15,7 @@ export interface SelectionInfo {
 
 export interface Note {
   id: string;
-  dialogueIndex: number;
+  dialogueId: string;
   startIndex: number;
   endIndex: number;
   noteContent: string;
@@ -30,7 +31,7 @@ interface ScreenplayTextColumnProps {
   onHighlightNote: (id: string | null) => void;
   /** When the add-note popover is open, show this selection as highlighted (browser selection is lost on focus) */
   currentSelection: {
-    dialogueIndex: number;
+    dialogueId: string;
     startIndex: number;
     endIndex: number;
   } | null;
@@ -46,11 +47,11 @@ interface ScreenplayTextColumnProps {
   /** If true, show add/edit/delete scene controls. Typically screenplay owner only. */
   canEditScenes?: boolean;
   /** Scene markers for this screenplay. */
-  scenes?: { id: string; dialogueIndex: number; title: string }[];
-  onAddSceneClick?: (dialogueIndex: number) => void;
+  scenes?: { id: string; dialogueId: string; title: string }[];
+  onAddSceneClick?: (dialogueId: string) => void;
   onEditScene?: (scene: {
     id: string;
-    dialogueIndex: number;
+    dialogueId: string;
     title: string;
   }) => void;
   onDeleteScene?: (sceneId: string) => void;
@@ -140,17 +141,20 @@ export function ScreenplayTextColumn({
       let node: Node | null = anchor;
       let blockEl: HTMLElement | null = null;
       let dialogueIndex: number | null = null;
+      let dialogueId: string | null = null;
       while (node && node !== containerRef.current) {
         const el = node as HTMLElement;
         const idx = el.getAttribute?.('data-dialogue-index');
-        if (idx != null) {
+        const did = el.getAttribute?.('data-dialogue-id');
+        if (idx != null && did != null) {
           blockEl = el;
           dialogueIndex = parseInt(idx, 10);
+          dialogueId = did;
           break;
         }
         node = node.parentElement;
       }
-      if (!blockEl || dialogueIndex == null) {
+      if (!blockEl || dialogueIndex == null || dialogueId == null) {
         onSelection(null);
         return;
       }
@@ -214,7 +218,7 @@ export function ScreenplayTextColumn({
 
       const rect = range.getBoundingClientRect();
       justSelectedRef.current = true;
-      onSelection({ dialogueIndex, startIndex, endIndex, rect });
+      onSelection({ dialogueId, dialogueIndex, startIndex, endIndex, rect });
     };
 
     const sel = window.getSelection();
@@ -246,15 +250,16 @@ export function ScreenplayTextColumn({
         onClick={handleClick}
       >
       {screenplay.map((item, index) => {
-        const notesForDialogue = notes.filter(n => n.dialogueIndex === index);
-        const isCurrentSelection = currentSelection?.dialogueIndex === index;
-        const sceneAtDialogue = scenes.find(s => s.dialogueIndex === index);
+        const notesForDialogue = notes.filter(n => n.dialogueId === item.id);
+        const isCurrentSelection = currentSelection?.dialogueId === item.id;
+        const sceneAtDialogue = scenes.find(s => s.dialogueId === item.id);
         const showSceneControls = Boolean(screenplayId && canEditScenes);
 
         return (
           <div
-            key={`${item.role}-${index}`}
+            key={item.id}
             data-dialogue-index={index}
+            data-dialogue-id={item.id}
             className={`group relative min-h-[4rem] p-4 rounded-xl border bg-slate-800/30 transition-colors [container-type:inline-size] ${
               sceneAtDialogue ? 'border-amber-500/60' : 'border-slate-600/50'
             }`}
@@ -300,7 +305,7 @@ export function ScreenplayTextColumn({
                     type="button"
                     onClick={e => {
                       e.stopPropagation();
-                      onAddSceneClick?.(index);
+                      onAddSceneClick?.(item.id);
                     }}
                     className="px-2 py-0.5 rounded text-xs bg-slate-600/50 text-slate-400 hover:bg-slate-500/50 hover:text-slate-200 transition-colors flex items-center gap-1"
                     title={translations.addScene}

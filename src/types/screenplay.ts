@@ -1,4 +1,5 @@
 export interface DialogueItem {
+  id: string;
   index: number;
   role: string;
   text: string;

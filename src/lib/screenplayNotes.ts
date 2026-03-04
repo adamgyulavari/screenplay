@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export interface NoteRow {
   id: string;
   screenplay_id: string;
-  dialogue_index: number;
+  dialogue_id: string;
   start_index: number;
   end_index: number;
   note_content: string;
@@ -16,7 +16,7 @@ export interface NoteRow {
 
 export interface NoteClient {
   id: string;
-  dialogueIndex: number;
+  dialogueId: string;
   startIndex: number;
   endIndex: number;
   noteContent: string;
@@ -28,7 +28,7 @@ export interface NoteClient {
 function rowToNote(row: NoteRow): NoteClient {
   return {
     id: row.id,
-    dialogueIndex: row.dialogue_index,
+    dialogueId: row.dialogue_id,
     startIndex: row.start_index,
     endIndex: row.end_index,
     noteContent: row.note_content,
@@ -53,7 +53,7 @@ export async function fetchNotes(screenplayId: string): Promise<NoteClient[]> {
 export async function createNote(
   screenplayId: string,
   note: {
-    dialogueIndex: number;
+    dialogueId: string;
     startIndex: number;
     endIndex: number;
     noteContent: string;
@@ -65,7 +65,7 @@ export async function createNote(
     .from('screenplay_notes')
     .insert({
       screenplay_id: screenplayId,
-      dialogue_index: note.dialogueIndex,
+      dialogue_id: note.dialogueId,
       start_index: note.startIndex,
       end_index: note.endIndex,
       note_content: note.noteContent,

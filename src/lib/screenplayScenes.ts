@@ -3,14 +3,14 @@ import { supabase } from './supabase';
 export interface SceneRow {
   id: string;
   screenplay_id: string;
-  dialogue_index: number;
+  dialogue_id: string;
   title: string;
   created_at: string;
 }
 
 export interface SceneClient {
   id: string;
-  dialogueIndex: number;
+  dialogueId: string;
   title: string;
   createdAt?: string;
 }
@@ -18,7 +18,7 @@ export interface SceneClient {
 function rowToScene(row: SceneRow): SceneClient {
   return {
     id: row.id,
-    dialogueIndex: row.dialogue_index,
+    dialogueId: row.dialogue_id,
     title: row.title,
     createdAt: row.created_at,
   };
@@ -31,7 +31,7 @@ export async function fetchScenes(
     .from('screenplay_scenes')
     .select('*')
     .eq('screenplay_id', screenplayId)
-    .order('dialogue_index', { ascending: true });
+    .order('created_at', { ascending: true });
 
   if (error) throw error;
   return (data ?? []).map(rowToScene);
@@ -39,13 +39,13 @@ export async function fetchScenes(
 
 export async function createScene(
   screenplayId: string,
-  scene: { dialogueIndex: number; title: string }
+  scene: { dialogueId: string; title: string }
 ): Promise<SceneClient> {
   const { data, error } = await supabase
     .from('screenplay_scenes')
     .insert({
       screenplay_id: screenplayId,
-      dialogue_index: scene.dialogueIndex,
+      dialogue_id: scene.dialogueId,
       title: scene.title,
     })
     .select()

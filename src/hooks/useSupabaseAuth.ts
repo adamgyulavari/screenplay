@@ -80,7 +80,7 @@ export async function loadAndSelectScreenplay(
 
   const sp = accessRow.screenplays as unknown as {
     id: string;
-    content: { role: string; text: string }[];
+    content: { id: string; role: string; text: string }[];
     owner_id: string;
   };
 

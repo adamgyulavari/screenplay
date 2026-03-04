@@ -14,7 +14,7 @@ import {
   setNotesView,
   toggleTTS,
 } from '../../store/appSlice';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar, ProgressBarScene } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
 import { AppHeader, headerBtnClass } from '../AppHeader';
@@ -71,6 +71,17 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
     }
   };
 
+  const idToIndex = new Map(
+    screenplay.map((item: any, i: number) => [item.id, i])
+  );
+  const progressScenes: ProgressBarScene[] = scenes
+    .map((s: any) => ({
+      id: s.id,
+      dialogueIndex: idToIndex.get(s.dialogueId) ?? -1,
+      title: s.title,
+    }))
+    .filter((s: ProgressBarScene) => s.dialogueIndex >= 0);
+
   const ttsClass = ttsEnabled
     ? 'flex items-center gap-2 px-3 py-2 bg-green-600/50 hover:bg-green-500/50 text-white rounded-lg transition-colors duration-200'
     : headerBtnClass;
@@ -94,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
           progress={progress}
           labelCurrent={currentIndex + 1}
           labelTotal={character.dialogues.length}
-          scenes={scenes}
+          scenes={progressScenes}
           onJump={handleJump}
           currentSegmentIndex={currentDialogueIndex}
         />

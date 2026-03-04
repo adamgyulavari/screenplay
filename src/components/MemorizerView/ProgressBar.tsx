@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { translations } from '../../utils/translations';
-import type { SceneClient } from '../../lib/screenplayScenes';
+
+export interface ProgressBarScene {
+  id: string;
+  dialogueIndex: number;
+  title: string;
+}
 
 export interface ProgressBarProps {
   /** Bar scale: total segments (e.g. screenplay.length). Used for scene positions and click → index. */
@@ -10,7 +15,7 @@ export interface ProgressBarProps {
   /** For "X / Y" label (e.g. character line 3 of 10, or scroll position). */
   labelCurrent: number;
   labelTotal: number;
-  scenes?: SceneClient[];
+  scenes?: ProgressBarScene[];
   /** Called with the segment index under the click (0 to totalLines-1). Caller maps to jump target if needed. */
   onJump: (segmentIndex: number) => void;
   /** If provided, click is no-op when hover is on this segment (avoids redundant jump). */
@@ -61,7 +66,7 @@ export const ProgressBar = ({
     }
   };
 
-  const getScenePosition = (scene: SceneClient): number | null => {
+  const getScenePosition = (scene: ProgressBarScene): number | null => {
     if (scene.dialogueIndex >= totalLines) return null;
     return (scene.dialogueIndex / totalLines) * 100;
   };

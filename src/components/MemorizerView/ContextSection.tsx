@@ -139,8 +139,9 @@ export const ContextSection = ({
           const isCurrentItem =
             contextIndexes[idx] === currentDialogueIndex - 1;
           const actualDialogueIndex = contextIndexes[idx];
+          const actualDialogueId = screenplay[actualDialogueIndex]?.id;
           const sceneAtDialogue = scenes.find(
-            s => s.dialogueIndex === actualDialogueIndex
+            s => s.dialogueId === actualDialogueId
           );
 
           const borderClass = isCurrentItem
@@ -169,7 +170,7 @@ export const ContextSection = ({
                 <InlineAnnotatedText
                   text={contextItem.text}
                   notes={notes.filter(
-                    n => n.dialogueIndex === actualDialogueIndex
+                    n => n.dialogueId === actualDialogueId
                   )}
                   highlightedNoteId={null}
                   onHighlightNote={() => {}}

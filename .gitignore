@@ -31,3 +31,4 @@ src/data/*
 
 # Supabase CLI cache
 supabase/.temp
+db-password

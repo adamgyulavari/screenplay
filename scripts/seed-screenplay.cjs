@@ -43,6 +43,13 @@ async function main() {
     process.exit(1);
   }
 
+  const crypto = require('crypto');
+  for (const item of content) {
+    if (!item.id) {
+      item.id = crypto.randomUUID();
+    }
+  }
+
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

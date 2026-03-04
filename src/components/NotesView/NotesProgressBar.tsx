@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { useAppSelector } from '../../store/hooks';
-import { ProgressBar } from '../MemorizerView/ProgressBar';
+import { ProgressBar, ProgressBarScene } from '../MemorizerView/ProgressBar';
 
 interface NotesProgressBarProps {
   scrollProgressIndex: number;
@@ -14,6 +15,18 @@ export function NotesProgressBar({
   const scenes = useAppSelector(state => state.app.scenes);
 
   const totalLines = screenplay.length;
+
+  const progressScenes: ProgressBarScene[] = useMemo(() => {
+    const idToIndex = new Map(screenplay.map((item, i) => [item.id, i]));
+    return scenes
+      .map(s => ({
+        id: s.id,
+        dialogueIndex: idToIndex.get(s.dialogueId) ?? -1,
+        title: s.title,
+      }))
+      .filter(s => s.dialogueIndex >= 0);
+  }, [screenplay, scenes]);
+
   if (totalLines === 0) return null;
 
   const progress =
@@ -27,7 +40,7 @@ export function NotesProgressBar({
       progress={progress}
       labelCurrent={Math.min(scrollProgressIndex + 1, totalLines)}
       labelTotal={totalLines}
-      scenes={scenes}
+      scenes={progressScenes}
       onJump={onJump}
       currentSegmentIndex={scrollProgressIndex}
     />

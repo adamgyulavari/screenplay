@@ -264,9 +264,7 @@ export const processScreenplayData = (screenplay: DialogueItem[]) => {
       .filter(group => group.characters.includes(characterRole))
       .map(group => {
         const originalIndex = screenplay.findIndex(
-          item =>
-            item.role === group.dialogue.role &&
-            item.text === group.dialogue.text
+          item => item.id === group.dialogue.id
         );
         return { ...group.dialogue, index: originalIndex };
       });

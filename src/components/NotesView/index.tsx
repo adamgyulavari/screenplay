@@ -50,8 +50,8 @@ export function NotesView() {
   const [error, setError] = useState<string | null>(null);
   const [scrollProgressIndex, setScrollProgressIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [addSceneAtDialogueIndex, setAddSceneAtDialogueIndex] = useState<
-    number | null
+  const [addSceneAtDialogueId, setAddSceneAtDialogueId] = useState<
+    string | null
   >(null);
   const [addSceneTitle, setAddSceneTitle] = useState('');
   const [editingSceneId, setEditingSceneId] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function NotesView() {
       const created = await createNote(
         screenplayId,
         {
-          dialogueIndex: selection.dialogueIndex,
+          dialogueId: selection.dialogueId,
           startIndex: selection.startIndex,
           endIndex: selection.endIndex,
           noteContent: addNoteContent.trim(),
@@ -144,15 +144,15 @@ export function NotesView() {
     setEditingContent(note.noteContent);
   }, []);
 
-  const handleAddSceneClick = useCallback((dialogueIndex: number) => {
-    setAddSceneAtDialogueIndex(dialogueIndex);
+  const handleAddSceneClick = useCallback((dialogueId: string) => {
+    setAddSceneAtDialogueId(dialogueId);
     setAddSceneTitle('');
   }, []);
 
   const handleCreateScene = useCallback(async () => {
     if (
       !screenplayId ||
-      addSceneAtDialogueIndex === null ||
+      addSceneAtDialogueId === null ||
       !addSceneTitle.trim()
     )
       return;
@@ -160,18 +160,18 @@ export function NotesView() {
     setError(null);
     try {
       const created = await createScene(screenplayId, {
-        dialogueIndex: addSceneAtDialogueIndex,
+        dialogueId: addSceneAtDialogueId,
         title: addSceneTitle.trim(),
       });
       dispatch(addScene(created));
-      setAddSceneAtDialogueIndex(null);
+      setAddSceneAtDialogueId(null);
       setAddSceneTitle('');
     } catch (e) {
       setError((e as Error)?.message ?? 'Failed to save scene');
     } finally {
       setSaving(false);
     }
-  }, [screenplayId, addSceneAtDialogueIndex, addSceneTitle, dispatch]);
+  }, [screenplayId, addSceneAtDialogueId, addSceneTitle, dispatch]);
 
   const handleSaveEditScene = useCallback(async () => {
     if (!editingSceneId || !editingSceneTitle.trim()) return;
@@ -214,12 +214,12 @@ export function NotesView() {
   );
 
   const handleCancelAddScene = useCallback(() => {
-    setAddSceneAtDialogueIndex(null);
+    setAddSceneAtDialogueId(null);
     setAddSceneTitle('');
   }, []);
 
   const startEditingScene = useCallback(
-    (scene: { id: string; dialogueIndex: number; title: string }) => {
+    (scene: { id: string; dialogueId: string; title: string }) => {
       setEditingSceneId(scene.id);
       setEditingSceneTitle(scene.title);
     },
@@ -272,7 +272,7 @@ export function NotesView() {
             currentSelection={
               selection
                 ? {
-                    dialogueIndex: selection.dialogueIndex,
+                    dialogueId: selection.dialogueId,
                     startIndex: selection.startIndex,
                     endIndex: selection.endIndex,
                   }
@@ -317,7 +317,7 @@ export function NotesView() {
         />
       )}
 
-      {addSceneAtDialogueIndex !== null && (
+      {addSceneAtDialogueId !== null && (
         <AddScenePopover
           content={addSceneTitle}
           onChangeContent={setAddSceneTitle}
