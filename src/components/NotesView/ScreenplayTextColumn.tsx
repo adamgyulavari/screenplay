@@ -29,8 +29,7 @@ interface ScreenplayTextColumnProps {
   notes: Note[];
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
-  /** When the add-note popover is open, show this selection as highlighted (browser selection is lost on focus) */
-  currentSelection: {
+  currentSelection?: {
     dialogueId: string;
     startIndex: number;
     endIndex: number;
@@ -352,7 +351,6 @@ type AnnotatedSegment =
   | { type: 'note'; start: number; end: number; note: Note; text: string }
   | { type: 'selection'; start: number; end: number; text: string };
 
-/** Notes and currentSelection use source indices (including * for italics). */
 function buildSegments(
   text: string,
   notes: Note[],
@@ -518,11 +516,11 @@ export function InlineAnnotatedText({
   notes: Note[];
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
-  currentSelection: { startIndex: number; endIndex: number } | null;
+  currentSelection?: { startIndex: number; endIndex: number } | null;
   onEditNote?: (note: Note) => void;
   onDeleteNote?: (id: string) => void;
 }) {
-  const segments = buildSegments(text, notes, currentSelection);
+  const segments = buildSegments(text, notes, currentSelection ?? null);
 
   return (
     <>

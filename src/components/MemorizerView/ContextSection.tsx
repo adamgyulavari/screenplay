@@ -174,7 +174,6 @@ export const ContextSection = ({
                   )}
                   highlightedNoteId={null}
                   onHighlightNote={() => {}}
-                  currentSelection={null}
                 />
               </p>
             </div>

@@ -374,6 +374,12 @@ function AddNotePopover({
       <textarea
         value={content}
         onChange={e => onChangeContent(e.target.value)}
+        onKeyDown={e => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canAdd && !saving) {
+            e.preventDefault();
+            onAdd();
+          }
+        }}
         placeholder={translations.notePlaceholder}
         className="w-full h-20 px-3 py-2 bg-slate-900/80 border border-slate-600 rounded text-slate-200 placeholder-slate-500 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-500"
         autoFocus
@@ -434,6 +440,12 @@ function AddScenePopover({
           type="text"
           value={content}
           onChange={e => onChangeContent(e.target.value)}
+          onKeyDown={e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canAdd && !saving) {
+              e.preventDefault();
+              onAdd();
+            }
+          }}
           placeholder={translations.sceneTitlePlaceholder}
           className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
           autoFocus
@@ -485,6 +497,12 @@ function EditScenePopover({
           type="text"
           value={content}
           onChange={e => onChangeContent(e.target.value)}
+          onKeyDown={e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && content.trim() && !saving) {
+              e.preventDefault();
+              onSave();
+            }
+          }}
           placeholder={translations.sceneTitlePlaceholder}
           className="w-full px-3 py-2 bg-slate-900/80 border border-slate-600 rounded text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500"
           autoFocus
@@ -527,6 +545,12 @@ function EditNotePopover({
         <textarea
           value={content}
           onChange={e => onChangeContent(e.target.value)}
+          onKeyDown={e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && content.trim() && !saving) {
+              e.preventDefault();
+              onSave();
+            }
+          }}
           placeholder={translations.notePlaceholder}
           className="w-full h-24 px-3 py-2 bg-slate-900/80 border border-slate-600 rounded text-slate-200 placeholder-slate-500 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-500"
           autoFocus

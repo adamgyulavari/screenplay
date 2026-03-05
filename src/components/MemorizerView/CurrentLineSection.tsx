@@ -119,7 +119,6 @@ export const CurrentLineSection = () => {
                   notes={lineNotes}
                   highlightedNoteId={null}
                   onHighlightNote={() => {}}
-                  currentSelection={null}
                 />
               </div>
             </div>
@@ -185,7 +184,6 @@ export const CurrentLineSection = () => {
                   notes={lineNotes}
                   highlightedNoteId={null}
                   onHighlightNote={() => {}}
-                  currentSelection={null}
                 />
               </div>
             </div>
