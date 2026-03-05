@@ -123,111 +123,125 @@ export function ScreenplayTextColumn({
     return () => container.removeEventListener('scroll', handler);
   }, [screenplay.length, containerReady]);
 
+  const processSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !containerRef.current) {
+      onSelection(null);
+      return;
+    }
+
+    const anchor = sel.anchorNode;
+    if (!anchor) {
+      onSelection(null);
+      return;
+    }
+
+    let node: Node | null = anchor;
+    let blockEl: HTMLElement | null = null;
+    let dialogueIndex: number | null = null;
+    let dialogueId: string | null = null;
+    while (node && node !== containerRef.current) {
+      const el = node as HTMLElement;
+      const idx = el.getAttribute?.('data-dialogue-index');
+      const did = el.getAttribute?.('data-dialogue-id');
+      if (idx != null && did != null) {
+        blockEl = el;
+        dialogueIndex = parseInt(idx, 10);
+        dialogueId = did;
+        break;
+      }
+      node = node.parentElement;
+    }
+    if (!blockEl || dialogueIndex == null || dialogueId == null) {
+      onSelection(null);
+      return;
+    }
+
+    const textRoot = blockEl.querySelector('[data-dialogue-text]');
+    const clampEl = (textRoot as HTMLElement) ?? blockEl;
+    if (!clampEl || !clampEl.contains(anchor)) {
+      onSelection(null);
+      return;
+    }
+
+    const range = sel.getRangeAt(0).cloneRange();
+    const clampRange = document.createRange();
+    clampRange.selectNodeContents(clampEl);
+
+    if (range.compareBoundaryPoints(Range.START_TO_START, clampRange) < 0) {
+      range.setStart(clampRange.startContainer, clampRange.startOffset);
+    }
+    if (range.compareBoundaryPoints(Range.END_TO_END, clampRange) > 0) {
+      range.setEnd(clampRange.endContainer, clampRange.endOffset);
+    }
+
+    if (range.collapsed) {
+      onSelection(null);
+      return;
+    }
+
+    function sourceIndexFromNode(node: Node, offset: number): number | null {
+      const el =
+        node.nodeType === Node.TEXT_NODE
+          ? (node.parentElement as HTMLElement)
+          : (node as HTMLElement);
+      let cur: HTMLElement | null = el;
+      while (cur && cur !== containerRef.current) {
+        const startAttr = cur.getAttribute?.('data-source-start');
+        if (startAttr != null) {
+          const base = parseInt(startAttr, 10);
+          const isEm = cur.tagName === 'EM';
+          return base + (isEm ? 1 : 0) + offset;
+        }
+        cur = cur.parentElement;
+      }
+      return null;
+    }
+
+    const anchorSource = sourceIndexFromNode(sel.anchorNode!, sel.anchorOffset);
+    const focusSource = sourceIndexFromNode(sel.focusNode!, sel.focusOffset);
+    if (anchorSource == null || focusSource == null) {
+      onSelection(null);
+      return;
+    }
+    const startIndex = Math.min(anchorSource, focusSource);
+    const endIndex = Math.max(anchorSource, focusSource);
+    if (startIndex >= endIndex) {
+      onSelection(null);
+      return;
+    }
+
+    const rect = range.getBoundingClientRect();
+    justSelectedRef.current = true;
+    onSelection({ dialogueId, dialogueIndex, startIndex, endIndex, rect });
+  }, [onSelection, screenplay]);
+
   const handleMouseUp = useCallback(() => {
-    const run = () => {
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0 || !containerRef.current) {
-        onSelection(null);
-        return;
-      }
-
-      const anchor = sel.anchorNode;
-      if (!anchor) {
-        onSelection(null);
-        return;
-      }
-
-      let node: Node | null = anchor;
-      let blockEl: HTMLElement | null = null;
-      let dialogueIndex: number | null = null;
-      let dialogueId: string | null = null;
-      while (node && node !== containerRef.current) {
-        const el = node as HTMLElement;
-        const idx = el.getAttribute?.('data-dialogue-index');
-        const did = el.getAttribute?.('data-dialogue-id');
-        if (idx != null && did != null) {
-          blockEl = el;
-          dialogueIndex = parseInt(idx, 10);
-          dialogueId = did;
-          break;
-        }
-        node = node.parentElement;
-      }
-      if (!blockEl || dialogueIndex == null || dialogueId == null) {
-        onSelection(null);
-        return;
-      }
-
-      const textRoot = blockEl.querySelector('[data-dialogue-text]');
-      const clampEl = (textRoot as HTMLElement) ?? blockEl;
-      if (!clampEl || !clampEl.contains(anchor)) {
-        onSelection(null);
-        return;
-      }
-
-      const range = sel.getRangeAt(0).cloneRange();
-      const clampRange = document.createRange();
-      clampRange.selectNodeContents(clampEl);
-
-      if (range.compareBoundaryPoints(Range.START_TO_START, clampRange) < 0) {
-        range.setStart(clampRange.startContainer, clampRange.startOffset);
-      }
-      if (range.compareBoundaryPoints(Range.END_TO_END, clampRange) > 0) {
-        range.setEnd(clampRange.endContainer, clampRange.endOffset);
-      }
-
-      if (range.collapsed) {
-        onSelection(null);
-        return;
-      }
-
-      function sourceIndexFromNode(node: Node, offset: number): number | null {
-        const el =
-          node.nodeType === Node.TEXT_NODE
-            ? (node.parentElement as HTMLElement)
-            : (node as HTMLElement);
-        let cur: HTMLElement | null = el;
-        while (cur && cur !== containerRef.current) {
-          const startAttr = cur.getAttribute?.('data-source-start');
-          if (startAttr != null) {
-            const base = parseInt(startAttr, 10);
-            const isEm = cur.tagName === 'EM';
-            return base + (isEm ? 1 : 0) + offset;
-          }
-          cur = cur.parentElement;
-        }
-        return null;
-      }
-
-      const anchorSource = sourceIndexFromNode(
-        sel.anchorNode!,
-        sel.anchorOffset
-      );
-      const focusSource = sourceIndexFromNode(sel.focusNode!, sel.focusOffset);
-      if (anchorSource == null || focusSource == null) {
-        onSelection(null);
-        return;
-      }
-      const startIndex = Math.min(anchorSource, focusSource);
-      const endIndex = Math.max(anchorSource, focusSource);
-      if (startIndex >= endIndex) {
-        onSelection(null);
-        return;
-      }
-
-      const rect = range.getBoundingClientRect();
-      justSelectedRef.current = true;
-      onSelection({ dialogueId, dialogueIndex, startIndex, endIndex, rect });
-    };
-
     const sel = window.getSelection();
     const raw = sel?.toString?.()?.trim() ?? '';
     if (raw.length === 0) {
-      setTimeout(run, 0);
+      setTimeout(processSelection, 0);
       return;
     }
-    run();
-  }, [onSelection, screenplay]);
+    processSelection();
+  }, [processSelection]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const handler = () => {
+      clearTimeout(timer);
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !container.contains(sel.anchorNode)) return;
+      timer = setTimeout(processSelection, 150);
+    };
+    document.addEventListener('selectionchange', handler);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('selectionchange', handler);
+    };
+  }, [processSelection]);
 
   const handleClick = useCallback(() => {
     if (justSelectedRef.current) {
