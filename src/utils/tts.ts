@@ -28,7 +28,7 @@ class TTSService {
   }
 
   processTextForTTS(text: string, maxLength: number = 120): string {
-    let cleanText = text.replace(/\*[^*]+\*/g, '');
+    const cleanText = text.replace(/\*[^*]+\*/g, '');
 
     if (cleanText.length <= maxLength) {
       return cleanText;
@@ -109,11 +109,11 @@ class TTSService {
     return voices.find(voice => voice.default) || voices[0] || null;
   }
 
-  async speak(text: string, apiKey: string | null): Promise<void> {
+  async speak(text: string): Promise<void> {
     const processedText = this.processTextForTTS(text);
-    if (TTS_CONFIG.provider === 'google' && apiKey) {
-      await this.speakWithGoogle(processedText, TTS_CONFIG.language, apiKey);
-    } else if (TTS_CONFIG.provider === 'google' && !apiKey) {
+    if (TTS_CONFIG.provider === 'google') {
+      // Route all Google TTS through the edge function so we never depend on
+      // browser-exposed keys that can start failing with 403s.
       await this.speakViaEdgeFunction(processedText, TTS_CONFIG.language);
     } else {
       this.speakWithBrowser(processedText, TTS_CONFIG.language);

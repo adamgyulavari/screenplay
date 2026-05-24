@@ -14,7 +14,6 @@ export const ContextSection = ({
   const notes = useAppSelector(state => state.app.notes);
   const scenes = useAppSelector(state => state.app.scenes);
   const ttsEnabled = useAppSelector(state => state.app.ttsEnabled);
-  const apiKey = useAppSelector(state => state.app.apiKey);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Calculate context range - show more context for better UX
@@ -103,7 +102,7 @@ export const ContextSection = ({
           // Stop any current speech and start reading the new context
           ttsService.stop();
           setTimeout(() => {
-            ttsService.speak(previousDialogue.text, apiKey);
+            ttsService.speak(previousDialogue.text);
           }, 100); // Small delay to ensure smooth transition
         }
       }

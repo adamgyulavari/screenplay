@@ -63,8 +63,12 @@ Deno.serve(async req => {
 
     if (!response.ok) {
       const errText = await response.text();
+      const error =
+        response.status === 403
+          ? 'Google TTS rejected the request. Check that TTS_GOOGLE_API_KEY is valid, the Text-to-Speech API is enabled, billing is active, and the key is allowed for server-side use.'
+          : 'Google TTS failed';
       return new Response(
-        JSON.stringify({ error: 'Google TTS failed', details: errText }),
+        JSON.stringify({ error, details: errText }),
         {
           status: response.status,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
