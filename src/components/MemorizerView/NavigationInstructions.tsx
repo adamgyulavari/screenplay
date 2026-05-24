@@ -9,7 +9,7 @@ export const NavigationInstructions: React.FC<NavigationInstructionsProps> = ({
   hasSegments,
 }) => (
   <div className="mt-8 text-center">
-    <div className="inline-flex items-center gap-6 px-6 py-3 bg-slate-800/50 rounded-xl border border-slate-600/30">
+    <div className="inline-flex flex-wrap justify-center items-center gap-x-4 gap-y-2 px-6 py-3 bg-slate-800/50 rounded-xl border border-slate-600/30">
       <div className="flex items-center gap-2 text-slate-300">
         <kbd className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
           ←

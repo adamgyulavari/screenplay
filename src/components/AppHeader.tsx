@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { ArrowLeft, LogOut } from 'lucide-react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ArrowLeft, LogOut, Menu, X } from 'lucide-react';
 import { useAppDispatch } from '../store/hooks';
 import { logout } from '../store/appSlice';
 import { supabase } from '../lib/supabase';
@@ -7,6 +7,9 @@ import { translations } from '../utils/translations';
 
 export const headerBtnClass =
   'flex items-center gap-2 px-3 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-lg transition-colors duration-200';
+
+export const menuItemClass =
+  'w-full flex items-center gap-3 px-4 py-2.5 text-left text-white hover:bg-slate-700/50 transition-colors text-sm';
 
 interface AppHeaderProps {
   back?: {
@@ -16,18 +19,32 @@ interface AppHeaderProps {
   title?: ReactNode;
   center?: ReactNode;
   actions?: ReactNode;
+  mobileMenuActions?: ReactNode;
 }
 
-export function AppHeader({ back, title, center, actions }: AppHeaderProps) {
+export function AppHeader({ back, title, center, actions, mobileMenuActions }: AppHeaderProps) {
   const dispatch = useAppDispatch();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     dispatch(logout());
   };
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
   return (
-    <header className="sticky top-0 z-40 py-3 px-4 md:px-6 bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
+    <header className="sticky top-0 z-40 py-3 px-4 md:px-6 bg-slate-800/95 border-b border-slate-700/50">
       <div className="flex items-center gap-3">
         {back && (
           <button onClick={back.onClick} className={headerBtnClass}>
@@ -52,10 +69,46 @@ export function AppHeader({ back, title, center, actions }: AppHeaderProps) {
         <div className="flex-1 md:hidden" />
 
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          {actions}
+          {actions && (
+            <div className="flex items-center gap-2 md:gap-3">{actions}</div>
+          )}
+
+          {mobileMenuActions && (
+            <div ref={menuRef} className="relative md:hidden">
+              <button
+                onClick={() => setMenuOpen(v => !v)}
+                className={headerBtnClass}
+                aria-label="Menu"
+                aria-expanded={menuOpen}
+              >
+                {menuOpen ? (
+                  <X className="w-4 h-4" />
+                ) : (
+                  <Menu className="w-4 h-4" />
+                )}
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-2 min-w-[200px] bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
+                  {mobileMenuActions}
+                  <div className="my-1 border-t border-slate-700/50" />
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-400 hover:bg-slate-700/50 transition-colors text-sm"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {translations.logout}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 bg-red-600/50 hover:bg-red-500/50 text-white rounded-lg transition-colors duration-200"
+            className={`items-center gap-2 px-3 py-2 bg-red-600/50 hover:bg-red-500/50 text-white rounded-lg transition-colors duration-200 ${
+              mobileMenuActions ? 'hidden md:flex' : 'flex'
+            }`}
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">{translations.logout}</span>

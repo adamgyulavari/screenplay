@@ -17,7 +17,7 @@ import {
 import { ProgressBar, ProgressBarScene } from './ProgressBar';
 import { getColorClasses } from '../../utils/colors';
 import { translations } from '../../utils/translations';
-import { AppHeader, headerBtnClass } from '../AppHeader';
+import { AppHeader, headerBtnClass, menuItemClass } from '../AppHeader';
 
 interface HeaderProps {
   onManageUsers?: () => void;
@@ -58,7 +58,6 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
   const progress =
     totalLines > 0 ? ((currentDialogueIndex + 1) / totalLines) * 100 : 0;
 
-  /** Map click on full screenplay bar to nearest character dialogue for jump. */
   const handleJump = (screenplayIndex: number) => {
     const dialogues = character.dialogues as number[];
     const nextOrCurrent = dialogues.find(d => d >= screenplayIndex);
@@ -112,17 +111,30 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
       }
       actions={
         <>
+          {/* Desktop-only buttons */}
           <button
             onClick={() => dispatch(setNotesView(true))}
-            className={headerBtnClass}
+            className={`${headerBtnClass} hidden md:flex`}
           >
             <FileText className="w-4 h-4" />
             <span className="hidden sm:inline">{translations.notes}</span>
           </button>
-          <button onClick={handleReset} className={headerBtnClass}>
+          <button onClick={handleReset} className={`${headerBtnClass} hidden md:flex`}>
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">{translations.reset}</span>
           </button>
+          {onManageUsers && (
+            <button
+              onClick={onManageUsers}
+              className={`${headerBtnClass} hidden md:flex`}
+            >
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {translations.manageUsers}
+              </span>
+            </button>
+          )}
+          {/* TTS: always visible on mobile and desktop */}
           <button
             onClick={handleToggleTTS}
             title={translations.ttsTooltip}
@@ -140,12 +152,25 @@ export const Header: React.FC<HeaderProps> = ({ onManageUsers }) => {
               </>
             )}
           </button>
+        </>
+      }
+      mobileMenuActions={
+        <>
+          <button
+            onClick={() => dispatch(setNotesView(true))}
+            className={menuItemClass}
+          >
+            <FileText className="w-4 h-4" />
+            {translations.notes}
+          </button>
+          <button onClick={handleReset} className={menuItemClass}>
+            <RotateCcw className="w-4 h-4" />
+            {translations.reset}
+          </button>
           {onManageUsers && (
-            <button onClick={onManageUsers} className={headerBtnClass}>
+            <button onClick={onManageUsers} className={menuItemClass}>
               <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                {translations.manageUsers}
-              </span>
+              {translations.manageUsers}
             </button>
           )}
         </>
