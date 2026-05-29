@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import {
   setNotesView,
@@ -135,6 +135,30 @@ export function NotesView() {
     setAddNoteContent('');
   }, []);
 
+  // Keep a custom highlight painted under the user's selected range while the
+  // comment popover is open. The native browser selection is preserved (we
+  // never touch it) but its paint becomes "inactive" once focus moves to the
+  // textarea, so we layer our own highlight on top via the CSS Custom
+  // Highlights API. Falls back to no extra highlight on browsers without
+  // support (the inactive native selection still shows there).
+  useEffect(() => {
+    const HIGHLIGHT_NAME = 'comment-selection';
+    const supported =
+      typeof CSS !== 'undefined' &&
+      'highlights' in CSS &&
+      typeof Highlight !== 'undefined';
+    if (!supported) return;
+    if (!selection) {
+      CSS.highlights.delete(HIGHLIGHT_NAME);
+      return;
+    }
+    const highlight = new Highlight(selection.range);
+    CSS.highlights.set(HIGHLIGHT_NAME, highlight);
+    return () => {
+      CSS.highlights.delete(HIGHLIGHT_NAME);
+    };
+  }, [selection]);
+
   const handleBack = useCallback(() => {
     dispatch(setNotesView(false));
   }, [dispatch]);
@@ -239,7 +263,7 @@ export function NotesView() {
   if (!screenplay.length) return null;
 
   return (
-    <div className="h-screen min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <AppHeader
         back={{
           label: selectedCharacter
@@ -262,22 +286,13 @@ export function NotesView() {
         }
       />
 
-      <div className="flex-1 flex min-h-0 justify-center">
-        <div className="w-full max-w-4xl flex-1 flex flex-col min-h-0 px-6 overflow-hidden">
+      <div className="flex justify-center">
+        <div className="w-full max-w-4xl px-6">
           <ScreenplayTextColumn
             onSelection={setSelection}
             notes={notes}
             highlightedNoteId={highlightedNoteId}
             onHighlightNote={setHighlightedNoteId}
-            currentSelection={
-              selection
-                ? {
-                    dialogueId: selection.dialogueId,
-                    startIndex: selection.startIndex,
-                    endIndex: selection.endIndex,
-                  }
-                : null
-            }
             onEditNote={startEditing}
             onDeleteNote={handleDeleteNote}
             onScrollProgress={setScrollProgressIndex}
@@ -375,6 +390,12 @@ function AddNotePopover({
         value={content}
         onChange={e => onChangeContent(e.target.value)}
         onKeyDown={e => {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            onCancel();
+            return;
+          }
           if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canAdd && !saving) {
             e.preventDefault();
             onAdd();
@@ -441,6 +462,12 @@ function AddScenePopover({
           value={content}
           onChange={e => onChangeContent(e.target.value)}
           onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel();
+              return;
+            }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canAdd && !saving) {
               e.preventDefault();
               onAdd();
@@ -498,6 +525,12 @@ function EditScenePopover({
           value={content}
           onChange={e => onChangeContent(e.target.value)}
           onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel();
+              return;
+            }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && content.trim() && !saving) {
               e.preventDefault();
               onSave();
@@ -546,6 +579,12 @@ function EditNotePopover({
           value={content}
           onChange={e => onChangeContent(e.target.value)}
           onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel();
+              return;
+            }
             if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && content.trim() && !saving) {
               e.preventDefault();
               onSave();

@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useAppSelector } from '../../store/hooks';
 import { FormattedText } from '../MemorizerView/FormattedText';
@@ -11,6 +11,13 @@ export interface SelectionInfo {
   startIndex: number;
   endIndex: number;
   rect: DOMRect;
+  /**
+   * Live DOM Range covering the selected text. Used by the parent to register
+   * a CSS Custom Highlight so the visual highlight survives focus moving to
+   * the comment textarea (the native selection becomes "inactive" and visually
+   * fades on most browsers as soon as another element is focused).
+   */
+  range: Range;
 }
 
 export interface Note {
@@ -25,15 +32,10 @@ export interface Note {
 }
 
 interface ScreenplayTextColumnProps {
-  onSelection: (info: SelectionInfo | null) => void;
+  onSelection: (info: SelectionInfo) => void;
   notes: Note[];
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
-  currentSelection?: {
-    dialogueId: string;
-    startIndex: number;
-    endIndex: number;
-  } | null;
   /** When set, notes show edit/delete controls (e.g. in NotesView). Omit in MemorizerView for read-only. */
   onEditNote?: (note: Note) => void;
   onDeleteNote?: (id: string) => void;
@@ -61,7 +63,6 @@ export function ScreenplayTextColumn({
   notes,
   highlightedNoteId,
   onHighlightNote,
-  currentSelection,
   onEditNote,
   onDeleteNote,
   onScrollProgress,
@@ -75,7 +76,6 @@ export function ScreenplayTextColumn({
 }: ScreenplayTextColumnProps) {
   const screenplay = useAppSelector(state => state.app.screenplay);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const justSelectedRef = useRef(false);
   const onScrollProgressRef = useRef(onScrollProgress);
   const [containerReady, setContainerReady] = useState(0);
   onScrollProgressRef.current = onScrollProgress;
@@ -100,17 +100,15 @@ export function ScreenplayTextColumn({
     const handler = () => {
       const children = container.querySelectorAll('[data-dialogue-index]');
       if (children.length === 0) return;
-      const containerRect = container.getBoundingClientRect();
-      const top = containerRect.top;
       let topIndex = 0;
       for (let i = 0; i < children.length; i++) {
         const child = children[i] as HTMLElement;
         const rect = child.getBoundingClientRect();
-        if (rect.top <= top && rect.bottom > top) {
+        if (rect.top <= 0 && rect.bottom > 0) {
           topIndex = i;
           break;
         }
-        if (rect.top > top) {
+        if (rect.top > 0) {
           topIndex = Math.max(0, i - 1);
           break;
         }
@@ -119,22 +117,21 @@ export function ScreenplayTextColumn({
       onScrollProgressRef.current?.(topIndex);
     };
     handler();
-    container.addEventListener('scroll', handler, { passive: true });
-    return () => container.removeEventListener('scroll', handler);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, [screenplay.length, containerReady]);
 
+  // IMPORTANT: This function must NEVER mutate the browser selection
+  // (no removeAllRanges, no setBaseAndExtent, etc) and must NEVER cause a
+  // re-render that replaces the text nodes the selection lives in. It only
+  // *reads* the current native selection and reports it upward when valid.
   const processSelection = useCallback(() => {
     const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || !containerRef.current) {
-      onSelection(null);
-      return;
-    }
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    if (!containerRef.current) return;
 
     const anchor = sel.anchorNode;
-    if (!anchor) {
-      onSelection(null);
-      return;
-    }
+    if (!anchor || !containerRef.current.contains(anchor)) return;
 
     let node: Node | null = anchor;
     let blockEl: HTMLElement | null = null;
@@ -152,17 +149,11 @@ export function ScreenplayTextColumn({
       }
       node = node.parentElement;
     }
-    if (!blockEl || dialogueIndex == null || dialogueId == null) {
-      onSelection(null);
-      return;
-    }
+    if (!blockEl || dialogueIndex == null || dialogueId == null) return;
 
     const textRoot = blockEl.querySelector('[data-dialogue-text]');
     const clampEl = (textRoot as HTMLElement) ?? blockEl;
-    if (!clampEl || !clampEl.contains(anchor)) {
-      onSelection(null);
-      return;
-    }
+    if (!clampEl || !clampEl.contains(anchor)) return;
 
     const range = sel.getRangeAt(0).cloneRange();
     const clampRange = document.createRange();
@@ -174,11 +165,7 @@ export function ScreenplayTextColumn({
     if (range.compareBoundaryPoints(Range.END_TO_END, clampRange) > 0) {
       range.setEnd(clampRange.endContainer, clampRange.endOffset);
     }
-
-    if (range.collapsed) {
-      onSelection(null);
-      return;
-    }
+    if (range.collapsed) return;
 
     function sourceIndexFromNode(node: Node, offset: number): number | null {
       const el =
@@ -200,71 +187,52 @@ export function ScreenplayTextColumn({
 
     const anchorSource = sourceIndexFromNode(sel.anchorNode!, sel.anchorOffset);
     const focusSource = sourceIndexFromNode(sel.focusNode!, sel.focusOffset);
-    if (anchorSource == null || focusSource == null) {
-      onSelection(null);
-      return;
-    }
+    if (anchorSource == null || focusSource == null) return;
     const startIndex = Math.min(anchorSource, focusSource);
     const endIndex = Math.max(anchorSource, focusSource);
-    if (startIndex >= endIndex) {
-      onSelection(null);
-      return;
-    }
+    if (startIndex >= endIndex) return;
 
     const rect = range.getBoundingClientRect();
-    justSelectedRef.current = true;
-    onSelection({ dialogueId, dialogueIndex, startIndex, endIndex, rect });
+    onSelection({
+      dialogueId,
+      dialogueIndex,
+      startIndex,
+      endIndex,
+      rect,
+      range,
+    });
   }, [onSelection, screenplay]);
 
-  const handleMouseUp = useCallback(() => {
-    const sel = window.getSelection();
-    const raw = sel?.toString?.()?.trim() ?? '';
-    if (raw.length === 0) {
-      setTimeout(processSelection, 0);
-      return;
-    }
-    processSelection();
-  }, [processSelection]);
-
+  // Trigger the comment box only after the selection has been stable for a
+  // moment ("after a while"). We never touch the selection — we just observe
+  // it and report when it lands on a valid range inside the text.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const handler = () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       const sel = window.getSelection();
-      if (!sel || sel.isCollapsed || !container.contains(sel.anchorNode)) return;
-      timer = setTimeout(processSelection, 150);
+      if (!sel || sel.isCollapsed) return;
+      if (!container.contains(sel.anchorNode)) return;
+      timer = setTimeout(processSelection, 400);
     };
     document.addEventListener('selectionchange', handler);
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       document.removeEventListener('selectionchange', handler);
     };
   }, [processSelection]);
 
-  const handleClick = useCallback(() => {
-    if (justSelectedRef.current) {
-      justSelectedRef.current = false;
-      return;
-    }
-    window.getSelection()?.removeAllRanges();
-    onSelection(null);
-  }, [onSelection]);
-
   if (!screenplay.length) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col min-w-0">
-      <div
-        ref={setContainerRef}
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6"
-        onMouseUp={handleMouseUp}
-        onClick={handleClick}
-      >
+    <div
+      ref={setContainerRef}
+      className="py-6 space-y-6"
+    >
       {screenplay.map((item, index) => {
         const notesForDialogue = notes.filter(n => n.dialogueId === item.id);
-        const isCurrentSelection = currentSelection?.dialogueId === item.id;
         const sceneAtDialogue = scenes.find(s => s.dialogueId === item.id);
         const showSceneControls = Boolean(screenplayId && canEditScenes);
 
@@ -273,7 +241,7 @@ export function ScreenplayTextColumn({
             key={item.id}
             data-dialogue-index={index}
             data-dialogue-id={item.id}
-            className={`group relative min-h-[4rem] p-4 rounded-xl border bg-slate-800/30 transition-colors [container-type:inline-size] ${
+            className={`scroll-mt-20 group relative min-h-[4rem] p-4 rounded-xl border bg-slate-800/30 transition-colors [container-type:inline-size] ${
               sceneAtDialogue ? 'border-amber-500/60' : 'border-slate-600/50'
             }`}
           >
@@ -339,14 +307,6 @@ export function ScreenplayTextColumn({
                   notes={notesForDialogue}
                   highlightedNoteId={highlightedNoteId}
                   onHighlightNote={onHighlightNote}
-                  currentSelection={
-                    isCurrentSelection
-                      ? {
-                          startIndex: currentSelection.startIndex,
-                          endIndex: currentSelection.endIndex,
-                        }
-                      : null
-                  }
                   onEditNote={onEditNote}
                   onDeleteNote={onDeleteNote}
                 />
@@ -355,20 +315,22 @@ export function ScreenplayTextColumn({
           </div>
         );
       })}
-      </div>
     </div>
   );
 }
 
 type TextSegment = { type: 'text'; content: string; sourceStart: number };
-type AnnotatedSegment =
-  | { type: 'note'; start: number; end: number; note: Note; text: string }
-  | { type: 'selection'; start: number; end: number; text: string };
+type AnnotatedSegment = {
+  type: 'note';
+  start: number;
+  end: number;
+  note: Note;
+  text: string;
+};
 
 function buildSegments(
   text: string,
-  notes: Note[],
-  currentSelection: { startIndex: number; endIndex: number } | null
+  notes: Note[]
 ): (TextSegment | AnnotatedSegment)[] {
   const annotations: AnnotatedSegment[] = [];
   for (const note of notes) {
@@ -380,18 +342,6 @@ function buildSegments(
         start,
         end,
         note,
-        text: text.slice(start, end),
-      });
-    }
-  }
-  if (currentSelection) {
-    const start = Math.max(0, currentSelection.startIndex);
-    const end = Math.min(text.length, currentSelection.endIndex);
-    if (start < end) {
-      annotations.push({
-        type: 'selection',
-        start,
-        end,
         text: text.slice(start, end),
       });
     }
@@ -422,11 +372,46 @@ function buildSegments(
   return segments;
 }
 
-/** Single note + snippet: measures note height and reserves that space so snippet never overlaps. */
+/** Height of one collapsed chip row in px — used for vertical staggering. */
+const ROW_HEIGHT = 28;
+
+/**
+ * Assign a vertical row index to each note so that chips for nearby notes
+ * (within PROXIMITY_CHARS of each other) are staggered to different rows
+ * instead of overlapping. Row 0 = closest to text, row 1 = one row higher, etc.
+ * Pure function — no DOM access, stable across renders.
+ */
+function assignRows(notes: Note[]): Map<string, number> {
+  const PROXIMITY_CHARS = 35;
+  const sorted = [...notes].sort((a, b) => a.startIndex - b.startIndex);
+  const rowEndChars: number[] = [];
+  const assignments = new Map<string, number>();
+  for (const note of sorted) {
+    let row = 0;
+    while (
+      row < rowEndChars.length &&
+      note.startIndex - rowEndChars[row] < PROXIMITY_CHARS
+    ) {
+      row++;
+    }
+    assignments.set(note.id, row);
+    if (row >= rowEndChars.length) rowEndChars.push(note.endIndex);
+    else rowEndChars[row] = note.endIndex;
+  }
+  return assignments;
+}
+
+/**
+ * Single note chip + highlighted snippet.
+ * Collapsed by default (truncated, no edit controls) — expands when highlighted.
+ * paddingTop reserves space above the snippet so the chip never overlaps it.
+ * rowOffset staggers this chip upward when adjacent notes would otherwise collide.
+ */
 function NoteSegment({
   note,
   segText,
   isHighlighted,
+  rowOffset,
   canEdit,
   canDelete,
   onHighlightNote,
@@ -436,6 +421,7 @@ function NoteSegment({
   note: Note;
   segText: string;
   isHighlighted: boolean;
+  rowOffset: number;
   canEdit: boolean;
   canDelete: boolean;
   onHighlightNote: (id: string | null) => void;
@@ -443,17 +429,33 @@ function NoteSegment({
   onDeleteNote?: (id: string) => void;
 }) {
   const noteRef = useRef<HTMLDivElement>(null);
-  const [paddingTop, setPaddingTop] = useState(20); // 1.25rem fallback for first paint
+  const [paddingTop, setPaddingTop] = useState(ROW_HEIGHT); // fallback for first paint
 
   useEffect(() => {
     const el = noteRef.current;
     if (!el) return;
-    const sync = () => setPaddingTop(el.offsetHeight + 4); // +4 for a small gap
+    const sync = () =>
+      setPaddingTop(el.offsetHeight + 4 + rowOffset * ROW_HEIGHT);
     sync();
     const ro = new ResizeObserver(sync);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [note.noteContent]);
+  }, [note.noteContent, isHighlighted, rowOffset]);
+
+  useLayoutEffect(() => {
+    const el = noteRef.current;
+    if (!el) return;
+    el.style.transform = '';
+    let card: HTMLElement | null = el.parentElement;
+    while (card && !card.hasAttribute('data-dialogue-index')) {
+      card = card.parentElement;
+    }
+    if (!card) return;
+    const overflow = el.getBoundingClientRect().right - (card.getBoundingClientRect().right - 8);
+    if (overflow > 0) {
+      el.style.transform = `translateX(${-overflow}px)`;
+    }
+  }, [note.noteContent, isHighlighted, rowOffset, paddingTop]);
 
   return (
     <span
@@ -462,7 +464,11 @@ function NoteSegment({
     >
       <div
         ref={noteRef}
-        className="absolute left-0 top-0 z-10 flex w-max max-w-[min(36rem,100cqw)] items-start gap-0.5 text-left"
+        className={`absolute left-0 top-0 z-10 flex items-start gap-0.5 text-left ${
+          isHighlighted
+            ? 'w-max max-w-[min(36rem,100cqw)]'
+            : 'max-w-[12rem]'
+        }`}
       >
         <button
           type="button"
@@ -470,15 +476,15 @@ function NoteSegment({
             e.stopPropagation();
             onHighlightNote(isHighlighted ? null : note.id);
           }}
-          className={`min-w-0 flex-1 rounded px-1.5 py-0.5 text-left text-xs transition-colors whitespace-normal ${
+          className={`min-w-0 flex-1 rounded px-1.5 py-0.5 text-left text-xs transition-colors ${
             isHighlighted
-              ? 'bg-amber-500/40 text-amber-200'
-              : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50'
+              ? 'bg-amber-500/40 text-amber-200 whitespace-normal break-words'
+              : 'bg-slate-600/50 text-slate-300 hover:bg-slate-500/50 truncate'
           }`}
         >
           {note.noteContent}
         </button>
-        {canEdit && (
+        {isHighlighted && canEdit && (
           <button
             type="button"
             onClick={e => {
@@ -492,7 +498,7 @@ function NoteSegment({
             <Pencil className="w-3 h-3" />
           </button>
         )}
-        {canDelete && (
+        {isHighlighted && canDelete && (
           <button
             type="button"
             onClick={e => {
@@ -522,7 +528,6 @@ export function InlineAnnotatedText({
   notes,
   highlightedNoteId,
   onHighlightNote,
-  currentSelection,
   onEditNote,
   onDeleteNote,
 }: {
@@ -530,11 +535,11 @@ export function InlineAnnotatedText({
   notes: Note[];
   highlightedNoteId: string | null;
   onHighlightNote: (id: string | null) => void;
-  currentSelection?: { startIndex: number; endIndex: number } | null;
   onEditNote?: (note: Note) => void;
   onDeleteNote?: (id: string) => void;
 }) {
-  const segments = buildSegments(text, notes, currentSelection ?? null);
+  const rowOffsets = useMemo(() => assignRows(notes), [notes]);
+  const segments = buildSegments(text, notes);
 
   return (
     <>
@@ -548,16 +553,6 @@ export function InlineAnnotatedText({
             />
           );
         }
-        if (seg.type === 'selection') {
-          return (
-            <mark
-              key={i}
-              className="bg-amber-500/40 rounded px-0.5 align-baseline"
-            >
-              <FormattedText text={seg.text} />
-            </mark>
-          );
-        }
         const { note, text: segText } = seg;
         const isHighlighted = highlightedNoteId === note.id;
         const canEdit = Boolean(onEditNote);
@@ -568,6 +563,7 @@ export function InlineAnnotatedText({
             note={note}
             segText={segText}
             isHighlighted={isHighlighted}
+            rowOffset={rowOffsets.get(note.id) ?? 0}
             canEdit={canEdit}
             canDelete={canDelete}
             onHighlightNote={onHighlightNote}

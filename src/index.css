@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Painted by NotesView while a comment popover is open. The native browser
+ * selection is preserved (we never touch it) but its paint becomes "inactive"
+ * once focus moves to the textarea, so we layer this custom highlight over
+ * the same range to keep the selection visible. */
+::highlight(comment-selection) {
+  background-color: rgba(245, 158, 11, 0.4); /* amber-500/40 */
+}
